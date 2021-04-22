@@ -1,0 +1,1 @@
+# logiciel-des-stocks
