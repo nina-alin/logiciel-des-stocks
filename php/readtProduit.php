@@ -58,7 +58,7 @@
 		 //SHOW POST/POSTS IN JSON FORMAT
 		 echo json_encode($posts_array);
 	}
-	else{
+	else {
 	 //IF THER IS NO POST IN OUR DATABASE
 	 echo json_encode(['message'=>'No post found']);
 	}

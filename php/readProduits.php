@@ -17,10 +17,10 @@
 	{
 		 //IF HAS ID PARAMETER
 		 $post_id = filter_var($_GET['id'], FILTER_VALIDATE_INT,[
-		 'options' => [
-		 'default' => 'all_posts',
-		 'min_range' => 1
-		 ]
+			'options' => [
+					'default' => 'all_posts',
+					'min_range' => 1
+			]
 		 ]);
 		}
 	else{
@@ -43,8 +43,8 @@
 		 $posts_array = [];
 		 while($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 			 $post_data = [
-			 'tProduitsPK' => $row['tProduitsPK'],
-			 'ProduitNom' => html_entity_decode($row['ProduitNom']),
+			 	'tProduitsPK' => $row['tProduitsPK'],
+			 	'ProduitNom' => html_entity_decode($row['ProduitNom']),
 			 ];
 			 // PUSH POST DATA IN OUR $posts_array ARRAY
 			 array_push($posts_array, $post_data);

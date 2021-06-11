@@ -17,10 +17,10 @@
 	{
 		 //IF HAS ID PARAMETER
 		 $post_id = filter_var($_GET['id'], FILTER_VALIDATE_INT,[
-		 'options' => [
-		 'default' => 'all_posts',
-		 'min_range' => 1
-		 ]
+			'options' => [
+				'default' => 'all_posts',
+				'min_range' => 1
+			]
 		 ]);
 		}
 	else{
