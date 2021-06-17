@@ -1,3 +1,8 @@
+<?php
+// On inclut la connexion à la base
+require_once('php/connect.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -41,112 +46,86 @@
 			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 		<![endif]-->
     <script>
-        // quelques variables globales
-        var theProductSelected;
-        var tProduitPK;
-
-        $(function() {
-
-            // on récupère la liste des produits
+        // POST
+        $(document).on('click', '#btn-add', function(e) {
+            var data = $("#marques_form").serialize();
             $.ajax({
-                type: "GET",
-                url: "php/readtProduit.php",
-                success: function(response) {
-                    loadProduit();
+                data: {
+                    type: 1,
+                    nomMarque: $("#nomMarque").val(),
                 },
-                error: function(resultat, statut, erreur) {},
+                type: "post",
+                url: "php/saveMarques.php",
+                success: function(dataResult) {
+                    var dataResult = JSON.parse(dataResult);
+                    if (dataResult.statusCode == 200) {
+                        $('#myModalMarqueAdd').modal('hide');
+                        alert('Données ajoutées avec succès !');
+                        location.reload();
+                    } else if (dataResult.statusCode == 201) {
+                        alert(dataResult);
+                    }
+                }
             });
-
-
-
-            // Si on veut modifier les données d'un produit
-            $(document).on('click', "#produitUpdate", function(event) {
-                tProduitPK = $(this).attr("ident");
-                loadProduit(tProduitPK);
-            });
-
-            // on met à jour un produit
-            $(document).on('click', "#updateProduit", function() {
-                tTypeProduitFK = $("#tTypeProduitFK").val();
-                nomProduit = $("#nomProduit").val();
-                compatibilite = $("#compatibilite").val();
-                codeProduit = $("#codeProduit").val();
-                marque = $("#marque").val();
-                quantiteTotale = $("#quantiteTotale").val();
-                var produitInfo = {
-                    "id": tProduitPK,
-                    "nomProduit": nomProduit,
-                    "compatibilite": compatibilite,
-                    "codeProduit": codeProduit,
-                    "marque": marque,
-                    "quantiteTotale": quantiteTotale
-                };
-                $.ajax({
-                    type: "POST",
-                    url: "php/updatetProduit.php",
-                    data: JSON.stringify(produitInfo),
-                    success: function(response) {
-                        loadProduit();
-                        alert(response.message);
-                    },
-                    error: function(resultat, statut, erreur) {},
-                });
-            });
-
-            // Si on veut supprimer un libellé
-            $(document).on('click', "#produitDelete", function(event) {
-                tProduitPK = $(this).attr("ident"); // lors d'un clic sur la poubelle
-            });
-
-
-            $(document).on('click', "#deleteProduit", function(event) {
-                var produitInfo = {
-                    "tProduitPK": tProduitPK, // récupéré lors du clic sur la poubelle
-                };
-                $.ajax({
-                    type: "DELETE",
-                    url: "php/deletetProduit.php",
-                    data: JSON.stringify(produitInfo),
-                    success: function(response) {
-                        loadProduit();
-                        alert(response.message);
-                    },
-                    error: function(resultat, statut, erreur) {},
-                });
-            });
-
         });
 
-        function loadProduit() {
+        // UPDATE
+        $(document).on('click', '.update', function(e) {
+            var tmarquesPK = $(this).attr("data-id");
+            var nomMarque = $(this).attr("data-nom");
+            $('#tmarquesPK_u').val(tmarquesPK);
+            $('#nomMarque_u').val(nomMarque);
+        });
+
+        $(document).on('click', '#update', function(e) {
+            var data = $("#update_form").serialize();
             $.ajax({
-                type: "GET",
-                url: "php/readtProduit.php",
-                success: produitSuccess,
-                error: function(resultat, statut, erreur) {},
-                complete: function(resultat, statut) {}
+                data: {
+                    type: 2,
+                    tmarquesPK: $("#tmarquesPK_u").val(),
+                    nomMarque: $("#nomMarque_u").val()
+                },
+                type: "post",
+                url: "php/saveMarques.php",
+                success: function(dataResult) {
+                    var dataResult = JSON.parse(dataResult);
+                    if (dataResult.statusCode == 200) {
+                        $('#myModalMarquesUpdate').modal('hide');
+                        alert('Données correctement modifiées !');
+                        location.reload();
+                    } else if (dataResult.statusCode == 201) {
+                        alert(dataResult);
+                    }
+                }
             });
-        }
+        });
 
+        // DELETE
+        $(document).on("click", ".delete", function() {
+            var tmarquesPK = $(this).attr("data-id");
+            $('#tmarquesPK_d').val(tmarquesPK);
+        });
 
-        function produitSuccess(jsonDatas) {
-            var dropDownList = "";
-            $.each(jsonDatas, function(key1, value1) {
-                $.each(value1, function(key2, value2) {
-                    if (key2 == "codeProduit")
-                        codeProduit = value2;
-                    if (key2 == "nomTypeProduit")
-                        nomTypeProduit = value2;
-                    if (key2 == "marque")
-                        marque = value2;
-                    if (key2 == "nomProduit")
-                        nomProduit = value2;
-                    if (key2 == "quantiteTotale")
-                        dropDownList += '<tr><td>' + codeProduit + '</td><td></td><td>' + marque + '</td><td>' + nomProduit + '</td><td>' + value2 + '</td><td><button class="btn btn-primary" data-target="#myModalProductUpdate" data-toggle="modal"><i class="fas fa-pen"></i></button>&nbsp;<button class="btn btn-danger" data-target="#myModalProductDelete" data-toggle="modal"><i class="fas fa-trash-alt"></i></button></td></tr>';
-                });
+        $(document).on("click", "#delete", function() {
+            $.ajax({
+                url: "php/saveMarques.php",
+                type: "POST",
+                cache: false,
+                data: {
+                    type: 3,
+                    tmarquesPK: $("#tmarquesPK_d").val()
+                },
+                success: function(dataResult) {
+                    $('#myModalMarquesDelete').modal('hide');
+                    $("#" + dataResult).remove();
+                    alert('Données correctement supprimées !');
+                    document.location.reload();
+                }
             });
-            $("#produitList").html(dropDownList);
-        }
+        });
     </script>
+
+
 </head>
 
 <body>
@@ -212,7 +191,7 @@
                     </div>
                     <br /><br />
                     <div class="col-1">
-                        <button class="btn btn-warning" data-target="#myModalLibelleAdd" data-toggle="modal">
+                        <button class="btn btn-warning" data-target="#myModalMarquesAdd" data-toggle="modal">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -229,7 +208,28 @@
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                <tbody id="produitList">
+                                <tbody>
+                                    <?php
+                                    $result = mysqli_query($conn, "SELECT * FROM tmarques");
+                                    while ($row = mysqli_fetch_array($result)) {
+                                    ?>
+                                        <tr tlibellesPK="<?php echo $row["tmarquesPK"]; ?>">
+                                            <td><?php echo $row["nomMarque"]; ?></td>
+                                            <td>
+                                                <button class="view btn btn-success" data-target="#myModalMarquesView" data-toggle="modal" data-id="<?php echo $row["tmarquesPK"]; ?>" data-nom="<?php echo $row["nomMarque"]; ?>">
+                                                    <i class="far fa-eye"></i>
+                                                </button>&nbsp;
+                                                <button class="update btn btn-primary" data-target="#myModalMarquesUpdate" data-toggle="modal" data-id="<?php echo $row["tmarquesPK"]; ?>" data-nom="<?php echo $row["nomMarque"]; ?>">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>&nbsp;
+                                                <button class="delete btn btn-danger" data-target="#myModalMarquesDelete" data-toggle="modal" data-id="<?php echo $row["tmarquesPK"]; ?>">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <?php
+                                    }
+                                    ?>
                                 </tbody>
                             </table>
                         </div>
@@ -247,73 +247,140 @@
     </div>
     <!-- /#wrapper -->
 
-    <!-- The Modal libellé Update-->
-    <div class="modal fade" id="myModalProductUpdate">
+    <!-- The Modal Marque Add-->
+    <div class="modal fade" id="myModalMarquesAdd">
         <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Modifier un produit</h4>
+                    <h4 class="modal-title">Ajouter une marque</h4>
                 </div>
                 <!-- Modal body -->
                 <div class="modal-body">
                     <div id="doubleU" style="display: none;"></div>
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                            <tr>
-                                <th>Code produit</th>
-                                <td>
-                                    <input class="form-control" id="codeProduit" name="codeProduit" size="40px" value="" required><b></b>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Catégorie</th>
-                                <td>
-                                    <select name="emplacements" id="emplacementList">
-                                    </select>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Marque</th>
-                                <td><input class="form-control" id="marque" name="marque" size="40px" value="" required><b></b></td>
-                            </tr>
-                            <tr>
-                                <th>Désignation</th>
-                                <td><input class="form-control" id="designation" name="designation" size="40px" value="" required><b></b></td>
-                            </tr>
-                            <tr>
-                                <th>Quantité</th>
-                                <td><input class="form-control" id="quantite" name="quantite" size="40px" value="" required><b></b></td>
-                            </tr>
+                            <form id="marques_form">
+                                <tr>
+                                    <th>Nom</th>
+                                    <td>
+                                        <input class="form-control" id="nomMarque" name="nomMarque" size="40px" value="" required><b></b>
+                                    </td>
+                                </tr>
+                            </form>
                         </table>
                     </div>
                 </div>
                 <!-- Modal footer -->
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary" id="updateLibelle">
-                        <span class="fas fa-pen"></span> Modifier
-                    </button>
+                    <input type="hidden" value="1" name="type">
+                    <button type="button" class="btn btn-warning" id="btn-add">Ajouter</button>
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- The Modal libellé Delete-->
-    <div class="modal fade" id="myModalProductDelete">
+    <!-- The Modal Marque view-->
+    <div class="modal fade" id="myModalMarquesView">
         <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title" id="produitDelete">Supprimer un produit</h4>
+                    <h4 class="modal-title">Liste des produits de la marque <?php echo '$nomMarque'; ?></h4>
                 </div>
-                <!-- Modal footer -->
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger" id="deleteProduit">
-                        <span class="fas fa-trash"></span> Supprimer
-                    </button>
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <div id="doubleU" style="display: none;"></div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Nom du produit</th>
+                                    <th>Type de produit</th>
+                                    <th>Lieu de stockage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK");
+                                while ($row = mysqli_fetch_array($result)) {
+                                ?>
+                                    <tr tlibellesPK="<?php echo $row["tproduitsPK"]; ?>">
+                                        <td><?php echo $row["nomModele"]; ?></td>
+                                        <td><?php echo $row["codeProduit"]; ?></td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                <?php
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal Marque Update-->
+    <div class="modal fade" id="myModalMarquesUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="update_form">
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Modifier une marque</h4>
+                    </div>
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <div id="doubleU" style="display: none;"></div>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
+                                <input type="hidden" id="tmarquesPK_u" name="tmarquesPK" class="form-control" required>
+                                <tr>
+                                    <th>Nom</th>
+                                    <td>
+                                        <input type="text" id="nomMarque_u" name="nom" class="form-control" value="<?php echo '$nomMarque'; ?>" required>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="update">Modifier</button>
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal Type Produit Delete-->
+    <div class="modal fade" id="myModalMarquesDelete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Supprimer une marque</h4>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="tmarquesPK_d" name="tmarquesPK" class="form-control">
+                        <p>Êtes-vous sûr de vouloir supprimer cette marque ?</p>
+                        <p class="text-warning"><small>Cette action ne peut pas être annulée.</small></p>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="delete">Supprimer</button>
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    </div>
+                </form>
             </div>
         </div>
     </div>

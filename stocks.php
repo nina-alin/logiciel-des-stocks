@@ -1,3 +1,8 @@
+<?php
+// On inclut la connexion à la base
+require_once('php/connect.php');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -230,10 +235,38 @@
 										<th>Marque</th>
 										<th>Désignation</th>
 										<th>Emplacement</th>
+										<th>Quantité</th>
 										<th>Action</th>
 									</tr>
 								</thead>
-								<tbody id="produitList">
+								<tbody>
+									<?php
+									$result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tproduits ON tproduitsstockes.tproduitsFK = tproduits.tproduitsPK JOIN tcaracteristiquesproduits ON tproduits.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN ttypeproduits ON tcaracteristiquesproduits.ttypeproduitsFK = ttypeproduits.ttypeproduitsPK JOIN tmarques ON tmarques.tmarquesPK = tcaracteristiquesproduits.tmarquesFK JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK JOIN templacements ON templacements.templacementsPK = tlibelles.tlibellesPK;
+									");
+									while ($row = mysqli_fetch_array($result)) {
+									?>
+										<tr tproduitsstockes="<?php echo $row["tproduitsstockesPK"]; ?>">
+											<td><?php echo $row["codeProduit"]; ?></td>
+											<td><?php echo $row["nomTypeProduit"]; ?></td>
+											<td><?php echo $row["nomMarque"]; ?></td>
+											<td><?php echo $row["nomModele"]; ?></td>
+											<td><?php echo $row["nomEmplacement"]; ?></td>
+											<td>//</td>
+											<td>
+												<button class="view btn btn-success" data-target="#myModalTypeProduitView" data-toggle="modal" data-id="<?php echo $row["ttypeproduitsPK"]; ?>" data-nom="<?php echo $row["nomTypeProduit"]; ?>">
+													<i class="far fa-eye"></i>
+												</button>&nbsp;
+												<button class="update btn btn-primary" data-target="#myModalTypeProduitUpdate" data-toggle="modal" data-id="<?php echo $row["ttypeproduitsPK"]; ?>" data-nom="<?php echo $row["nomTypeProduit"]; ?>">
+													<i class="fas fa-pen"></i>
+												</button>&nbsp;
+												<button class="delete btn btn-danger" data-target="#myModalTypeProduitDelete" data-toggle="modal" data-id="<?php echo $row["ttypeproduitsPK"]; ?>">
+													<i class="fas fa-trash-alt"></i>
+												</button>
+											</td>
+										</tr>
+									<?php
+									}
+									?>
 								</tbody>
 							</table>
 						</div>

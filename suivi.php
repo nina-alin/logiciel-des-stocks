@@ -124,7 +124,8 @@ require_once('php/connect.php');
 							?>
 						</select>
 					</div>
-
+				</div>
+				<div class="row">
 				</div>
 				<!-- /.row -->
 				<!-- /.container-fluid -->
