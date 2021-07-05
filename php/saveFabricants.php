@@ -5,9 +5,9 @@ include 'connect.php';
 // POST
 if (count($_POST) > 0) {
     if ($_POST['type'] == 1) {
-        $nomTypeProduit = $_POST['nomTypeProduit'];
-        $sql = "INSERT INTO `ttypeproduits`(`nomTypeProduit`) 
-		VALUES ('$nomTypeProduit')";
+        $nomFabricant = $_POST['nomFabricant'];
+        $sql = "INSERT INTO `tfabricants`(`nomFabricant`) 
+		VALUES ('$nomFabricant')";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(array("statusCode" => 200));
         } else {
@@ -20,9 +20,9 @@ if (count($_POST) > 0) {
 // UPDATE
 if (count($_POST) > 0) {
     if ($_POST['type'] == 2) {
-        $ttypeproduitsPK = $_POST['ttypeproduitsPK'];
-        $nomTypeProduit = $_POST['nomTypeProduit'];
-        $sql = "UPDATE `ttypeproduits` SET `nomTypeProduit` = '$nomTypeProduit' WHERE `ttypeproduits`.`ttypeproduitsPK` = $ttypeproduitsPK;";
+        $tfabricantsPK = $_POST['tfabricantsPK'];
+        $nomFabricant = $_POST['nomFabricant'];
+        $sql = "UPDATE `tfabricants` SET `nomFabricant` = '$nomFabricant' WHERE `tfabricants`.`tfabricantsPK` = $tfabricantsPK;";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(array("statusCode" => 200));
         } else {
@@ -35,10 +35,10 @@ if (count($_POST) > 0) {
 // DELETE
 if (count($_POST) > 0) {
     if ($_POST['type'] == 3) {
-        $ttypeproduitsPK = $_POST['ttypeproduitsPK'];
-        $sql = "DELETE FROM `ttypeproduits` WHERE ttypeproduitsPK=$ttypeproduitsPK ";
+        $tfabricantsPK = $_POST['tfabricantsPK'];
+        $sql = "DELETE FROM `tfabricants` WHERE tfabricantsPK=$tfabricantsPK ";
         if (mysqli_query($conn, $sql)) {
-            echo $ttypeproduitsPK;
+            echo $tfabricantsPK;
         } else {
             echo "Error: " . $sql . "<br>" . mysqli_error($conn);
         }
@@ -49,8 +49,8 @@ if (count($_POST) > 0) {
 // GET
 if (count($_GET) > 0) {
     if ($_GET['type'] == 4) {
-        $ttypeproduitsFK = $_GET['ttypeproduitsPK'];
-        $sql = "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK JOIN tcaracteristiquesproduits ON tcaracteristiquesproduits.tcaracteristiquesproduitsPK = tproduitsstockes.tcaracteristiquesproduitsFK JOIN ttypeproduits ON ttypeproduits.ttypeproduitsPK = tcaracteristiquesproduits.ttypeproduitsFK JOIN tfabricants ON tfabricants.tfabricantsPK = tcaracteristiquesproduits.tfabricantsFK WHERE ttypeproduitsFK=$ttypeproduitsFK ORDER BY nomFabricant, nomModele";
+        $tfabricantsPK = $_GET['tfabricantsPK'];
+        $sql = "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK JOIN tcaracteristiquesproduits ON tcaracteristiquesproduits.tcaracteristiquesproduitsPK = tproduitsstockes.tcaracteristiquesproduitsFK JOIN ttypeproduits ON ttypeproduits.ttypeproduitsPK = tcaracteristiquesproduits.ttypeproduitsFK JOIN tfabricants ON tfabricants.tfabricantsPK = tcaracteristiquesproduits.tfabricantsFK WHERE tfabricantsFK=$tfabricantsPK ORDER BY nomModele";
         $result = mysqli_query($conn, $sql);
         $output = '';
         while ($row = mysqli_fetch_array($result)) {
@@ -60,8 +60,8 @@ if (count($_GET) > 0) {
                 $output .= '<tr>';
             }
             $output .= '
-                       <td>' . $row["nomFabricant"] . '</td>   
                        <td>' . $row["nomModele"] . '</td>  
+                       <td>' . $row["nomTypeProduit"] . '</td>   
                        <td>' . $row["quantite"] . '</td>  
                        <td>' . $row["codeProduit"] . '</td> 
                        <td>' . $row["nomLibelle"] . ' - ' . $row["nomEmplacement"] . '</td>    

@@ -1,6 +1,12 @@
 <?php
-// On inclut la connexion à la base
+// Initialiser la session
+session_start();
 require_once('php/connect.php');
+// Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
+if (!isset($_SESSION["username"])) {
+	header("Location: login.php");
+	exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -42,50 +48,107 @@ require_once('php/connect.php');
 			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 		<![endif]-->
 </head>
-
 <script>
+	// GET
+	$(document).on('click', '.view', function(e) {
+		var tlibellesPK = $(this).attr("data-id");
+		var nomLibelle = $(this).attr("data-nom-libelle");
+		var nomEmplacement = $(this).attr("data-nom-emplacement");
+		document.getElementById("afficherViewNomLibelle").innerHTML = "Liste des produits situés dans " + nomEmplacement + " - " + nomLibelle;
+		$.ajax({
+			url: "php/saveLibelle.php",
+			method: "GET",
+			data: {
+				type: 4,
+				tlibellesPK: tlibellesPK
+			},
+			success: function(dataResult) {
+				$('#libelle_details').html(dataResult);
+				$('#myModalLibelleView').modal('show');
+			},
+			error: function(request, status, error) {
+				alert(request.responseText);
+			}
+		});
+	});
+
 	// POST
 	$(document).on('click', '#btn-add', function(e) {
 		var data = $("#libelle_form").serialize();
 		$.ajax({
-			data: data,
+			data: {
+				nomLibelle: $("#nomLibelle_a").val(),
+				templacementsFK: $("#templacementsFK_a").val(),
+				type: "1"
+			},
 			type: "post",
 			url: "php/saveLibelle.php",
 			success: function(dataResult) {
-				var dataResult = JSON.parse(dataResult);
+				try {
+					var dataResult = JSON.parse(dataResult);
+				} catch (e) {
+					if (e instanceof SyntaxError) {
+						alert("Erreur lors de la requête !", true);
+					} else {
+						alert("Erreur lors de la requête !", false);
+					}
+				}
 				if (dataResult.statusCode == 200) {
 					$('#myModalLibelleAdd').modal('hide');
-					alert('Data added successfully !');
+					alert('Données correctement ajoutées !');
 					location.reload();
 				} else if (dataResult.statusCode == 201) {
 					alert(dataResult);
 				}
+			},
+			error: function(request, status, error) {
+				alert(request.responseText);
 			}
 		});
 	});
 
 	$(document).on('click', '.update', function(e) {
-		var templacementsFK = $(this).attr("data-nom-emplacement");
+		var tlibellesPK = $(this).attr("data-libelle-id");
+		var templacementsFK = $(this).attr("data-emplacement-id");
 		var nomLibelle = $(this).attr("data-nom-libelle");
-		$('#id_u_emplacement').val(templacementsFK);
-		$('#nom_u_libelle').val(nomLibelle);
+		document.getElementById("afficherUpdateNomLibelle").innerHTML = "Modifier le libellé " + nomLibelle;
+		$('#tlibellesPK_u').val(tlibellesPK);
+		$('#templacementsFK_u').val(templacementsFK);
+		$('#nomLibelle_u').val(nomLibelle);
 	});
 
 	$(document).on('click', '#update', function(e) {
+
 		var data = $("#update_form").serialize();
 		$.ajax({
-			data: data,
+			data: {
+				tlibellesPK: $("#tlibellesPK_u").val(),
+				nomLibelle: $("#nomLibelle_u").val(),
+				templacementsFK: $("#templacementsFK_u").val(),
+				type: "2"
+			},
 			type: "post",
 			url: "php/saveLibelle.php",
 			success: function(dataResult) {
-				var dataResult = JSON.parse(dataResult);
+				try {
+					var dataResult = JSON.parse(dataResult);
+				} catch (e) {
+					if (e instanceof SyntaxError) {
+						alert("Erreur lors de la requête !", true);
+					} else {
+						alert("Erreur lors de la requête !", false);
+					}
+				}
 				if (dataResult.statusCode == 200) {
 					$('#editLibelleModal').modal('hide');
-					alert('Data updated successfully !');
+					alert('Données correctement modifiées !');
 					location.reload();
 				} else if (dataResult.statusCode == 201) {
 					alert(dataResult);
 				}
+			},
+			error: function(request, status, error) {
+				alert(request.responseText);
 			}
 		});
 	});
@@ -94,8 +157,8 @@ require_once('php/connect.php');
 	$(document).on("click", ".delete", function() {
 		var tlibellesPK = $(this).attr("data-id");
 		$('#tlibellesPK_d').val(tlibellesPK);
-
 	});
+
 	$(document).on("click", "#delete", function() {
 		$.ajax({
 			url: "php/saveLibelle.php",
@@ -108,7 +171,11 @@ require_once('php/connect.php');
 			success: function(dataResult) {
 				$('#myModalLibelleDelete').modal('hide');
 				$("#" + dataResult).remove();
-
+				alert('Données correctement supprimées !');
+				document.location.reload();
+			},
+			error: function(request, status, error) {
+				alert(request.responseText);
 			}
 		});
 	});
@@ -116,7 +183,6 @@ require_once('php/connect.php');
 
 <body>
 	<div id="wrapper">
-
 		<!-- Navigation -->
 		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 			<!-- Brand and toggle get grouped for better mobile display -->
@@ -129,6 +195,25 @@ require_once('php/connect.php');
 				</button>
 				<a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
 			</div>
+			<!-- /.navbar-header -->
+
+			<ul class="nav navbar-top-links navbar-right">
+				<li class="dropdown">
+					<a class="dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-cog"></i> <?php echo $_SESSION["username"] ?> <i class="fa fa-caret-down"></i>
+					</a>
+					<ul class="dropdown-menu dropdown-user">
+						<li><a href="/stocks/caracteristiquesProduits.php"><i class="fas fa-microchip"></i>&nbsp;Modèles de produits</a></li>
+						<li> <a href="/stocks/techniciens.php"><i class="fas fa-wrench"></i>&nbsp;Techniciens</a></li>
+						<li class="active"> <a href="/stocks/lieuStockage.php"><i class="fas fa-box-open"></i>&nbsp;Lieux de stockage</a></li>
+						<li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
+						<li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
+						<li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+						<li class="divider"></li>
+						<li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
+					</ul>
+				</li>
+			</ul>
 			<!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
@@ -138,32 +223,19 @@ require_once('php/connect.php');
 					<li>
 						<a href="stocks.php">Stocks</a>
 					</li>
-					<li class="active">
-						<a href="lieuStockage.php">Lieux de stockage</a>
-					</li>
 					<li>
-						<a href="suivi.php">Suivi</a>
+						<a href="sorties.php">Dernières sorties</a>
 					</li>
 					<li>
 						<a href="reforme.php">Réforme</a>
 					</li>
 					<li>
-						<a href="sorties.php">Dernières sorties</a>
-					</li>
-					<li>
-						<a href="techniciens.php">Techniciens</a>
-					</li>
-					<li>
-						<a href="marques.php">Marques</a>
-					</li>
-					<li>
-						<a href="typesProduits.php">Types de produits</a>
+						<a href="commandes.php">Commandes</a>
 					</li>
 				</ul>
 			</div>
 			<!-- /.navbar-collapse -->
 		</nav>
-
 		<div id="page-wrapper">
 
 			<div class="container-fluid">
@@ -197,20 +269,20 @@ require_once('php/connect.php');
 								</thead>
 								<tbody>
 									<?php
-									$result = mysqli_query($conn, "SELECT * FROM tlibelles INNER JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK");
+									$result = mysqli_query($conn, "SELECT * FROM tlibelles INNER JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK ORDER BY nomEmplacement, nomLibelle");
 									while ($row = mysqli_fetch_array($result)) {
 									?>
 										<tr tlibellesPK="<?php echo $row["tlibellesPK"]; ?>">
 											<td><?php echo $row["nomLibelle"]; ?></td>
 											<td><?php echo $row["nomEmplacement"]; ?></td>
 											<td>
-												<button class="btn btn-success" data-target="#myModalLibelleView" data-toggle="modal">
+												<button class="view btn btn-success" data-target="#myModalLibelleView" data-toggle="modal" data-id="<?php echo $row["tlibellesPK"]; ?>" data-nom-libelle="<?php echo $row["nomLibelle"]; ?>" data-nom-emplacement="<?php echo $row["nomEmplacement"]; ?>">
 													<i class="far fa-eye"></i>
 												</button>&nbsp;
-												<button class="btn btn-primary" data-target="#myModalLibelleUpdate" data-toggle="modal" data-libelle-id=<?php echo $row["tlibellesPK"]; ?> data-nom-libelle=<?php echo $row["nomLibelle"]; ?> data-emplacement-id=<?php echo $row["templacementsPK"]; ?>>
+												<button class="update btn btn-primary" data-target="#myModalLibelleUpdate" data-toggle="modal" data-libelle-id=<?php echo $row["tlibellesPK"]; ?> data-nom-libelle=<?php echo $row["nomLibelle"]; ?> data-emplacement-id=<?php echo $row["templacementsPK"]; ?>>
 													<i class="fas fa-pen"></i>
 												</button>&nbsp;
-												<button class="btn btn-danger" data-target="#myModalLibelleDelete" data-toggle="modal" data-id="<?php echo $row["tlibellesPK"]; ?>">
+												<button class="delete btn btn-danger" data-target="#myModalLibelleDelete" data-toggle="modal" data-id="<?php echo $row["tlibellesPK"]; ?>">
 													<i class="fas fa-trash-alt"></i>
 												</button>
 											</td>
@@ -253,7 +325,7 @@ require_once('php/connect.php');
 								<tr>
 									<th>Emplacement</th>
 									<td>
-										<select class="form-control" id="nomEmplacement" name="nomEmplacement" value="" required>
+										<select class="form-control" id="templacementsFK_a" name="templacementsFK_a" value="" required>
 											<?php
 											$result = mysqli_query($conn, "SELECT * FROM templacements");
 											while ($row = mysqli_fetch_array($result)) {
@@ -267,7 +339,7 @@ require_once('php/connect.php');
 								</tr>
 								<tr>
 									<th>Nom</th>
-									<td><input class="form-control" id="nomLibelle" name="nomLibelle" size="40px" value="" required><b></b></td>
+									<td><input class="form-control" id="nomLibelle_a" name="nomLibelle_a" size="40px" value="" required><b></b></td>
 								</tr>
 							</form>
 						</table>
@@ -292,7 +364,7 @@ require_once('php/connect.php');
 				<!-- Modal Header -->
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
-					<h4 class="modal-title">Liste des produits dans </h4>
+					<h4 class="modal-title" id="afficherViewNomLibelle"></h4>
 				</div>
 				<!-- Modal body -->
 				<div class="modal-body">
@@ -301,27 +373,14 @@ require_once('php/connect.php');
 						<table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
 							<thead>
 								<tr>
-									<th>Nom du produit</th>
-									<th>Marque</th>
-									<th>Numéro de série</th>
-									<th>Compatibilité</th>
+									<th>Fabricant</th>
+									<th>Modèle</th>
+									<th>Désignation</th>
+									<th>Quantité</th>
 									<th>Code produit</th>
 								</tr>
 							</thead>
-							<tbody>
-								<?php
-								$result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK");
-								while ($row = mysqli_fetch_array($result)) {
-								?>
-									<tr tlibellesPK="<?php echo $row["tproduitsPK"]; ?>">
-										<td><?php echo $row["nomModele"]; ?></td>
-										<td><?php echo $row["codeProduit"]; ?></td>
-										<td>
-										</td>
-									</tr>
-								<?php
-								}
-								?>
+							<tbody id="libelle_details">
 							</tbody>
 						</table>
 					</div>
@@ -337,7 +396,7 @@ require_once('php/connect.php');
 				<!-- Modal Header -->
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
-					<h4 class="modal-title">Modifier un libellé</h4>
+					<h4 class="modal-title" id="afficherUpdateNomLibelle"></h4>
 				</div>
 				<!-- Modal body -->
 				<div class="modal-body">
@@ -347,7 +406,7 @@ require_once('php/connect.php');
 							<tr>
 								<th>Emplacement</th>
 								<td>
-									<select>
+									<select class="form-control" id="templacementsFK_u" name="templacementsFK_u" required>
 										<?php
 										$result = mysqli_query($conn, "SELECT * FROM templacements");
 										while ($row = mysqli_fetch_array($result)) {
@@ -361,14 +420,14 @@ require_once('php/connect.php');
 							</tr>
 							<tr>
 								<th>Nom</th>
-								<td><input class="form-control" id="nom_u_libelle" name="nom" size="40px" value="" required><b></b></td>
+								<td><input class="form-control" id="nomLibelle_u" name="nom" size="40px" value="<?php echo '$nomLibelle'; ?>" required><b></b></td>
 							</tr>
 						</table>
 					</div>
 				</div>
 				<!-- Modal footer -->
 				<div class="modal-footer">
-					<input type="hidden" value="2" name="type">
+					<input type="hidden" id="tlibellesPK_u" name="tlibellesPK" name="type">
 					<button type="submit" class="btn btn-primary" id="update">
 						<span class="fas fa-pen"></span> Modifier
 					</button>
@@ -386,32 +445,50 @@ require_once('php/connect.php');
 					<!-- Modal Header -->
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title" id="libelleDelete">Supprimer un libellé</h4>
+						<h4 class="modal-title">Supprimer un libellé</h4>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" id="tlibellesPK_d" name="tlibellesPK" class="form-control">
+						<p>Êtes-vous sûr de vouloir supprimer ce libellé ?</p>
+						<p class="text-warning"><small>Cette action ne peut pas être annulée.</small></p>
 					</div>
 					<!-- Modal footer -->
 					<div class="modal-footer">
-						<input type="hidden" id="tlibellesPK_d" name="tlibellesPK" name="type">
-						<button type="submit" class="btn btn-danger" id="delete">
-							<span class="fas fa-trash"></span> Supprimer
-						</button>
-						<input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
+						<button type="button" class="btn btn-danger" id="delete">Supprimer</button>
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
 
+	<script>
+		/* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+		function myFunction() {
+			document.getElementById("myDropdown").classList.toggle("show");
+		}
+
+		// Close the dropdown if the user clicks outside of it
+		window.onclick = function(event) {
+			if (!event.target.matches('.dropbtn')) {
+				var dropdowns = document.getElementsByClassName("dropdown-content");
+				var i;
+				for (i = 0; i < dropdowns.length; i++) {
+					var openDropdown = dropdowns[i];
+					if (openDropdown.classList.contains('show')) {
+						openDropdown.classList.remove('show');
+					}
+				}
+			}
+		}
+	</script>
+
 	<!-- jQuery Version 1.11.0 -->
 	<script src="js/jquery-1.11.0.js"></script>
 
 	<!-- Bootstrap Core JavaScript -->
 	<script src="js/bootstrap.min.js"></script>
-
-	<!-- Morris Charts JavaScript -->
-	<script src="js/plugins/morris/raphael.min.js"></script>
-	<script src="js/plugins/morris/morris.min.js"></script>
-	<script src="js/plugins/morris/morris-data.js"></script>
-
 </body>
 
 </html>

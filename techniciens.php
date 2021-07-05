@@ -1,6 +1,12 @@
 <?php
-// On inclut la connexion à la base
+// Initialiser la session
+session_start();
 require_once('php/connect.php');
+// Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
+if (!isset($_SESSION["username"])) {
+    header("Location: login.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -35,10 +41,6 @@ require_once('php/connect.php');
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
-    <!--Calendar script-->
-    <script src="js/jsSimpleDatePickr.2.1.js"></script>
-
-
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -46,30 +48,52 @@ require_once('php/connect.php');
                 <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
             <![endif]-->
     <script>
+        // GET
+        $(document).on('click', '.view', function(e) {
+            var ttechnicienPK = $(this).attr("data-id");
+            var nomTechnicien = $(this).attr("data-nom");
+            var prenomTechnicien = $(this).attr("data-prenom");
+            document.getElementById("afficherViewTechnicien").innerHTML = "Produits ajoutés par " + prenomTechnicien + " " + nomTechnicien;
+            $.ajax({
+                url: "php/saveTechnicien.php",
+                method: "GET",
+                data: {
+                    type: 4,
+                    ttechnicienPK: ttechnicienPK
+                },
+                success: function(dataResult) {
+                    $('#technicien_details').html(dataResult);
+                    $('#myModalTechnicienView').modal('show');
+                },
+                error: function(request, status, error) {
+                    alert(request.responseText);
+                }
+            });
+        });
+
         // POST
         $(document).on('click', '#btn-add', function(e) {
-            // Get the checkbox
-            var checkBoxOui = document.getElementById("ouiService");
-            var checkBoxNon = document.getElementById("nonService");
-            // If the checkbox is checked, display the output text
-            if (checkBoxOui.checked == true) {
-                $("#toujoursService").val == 1;
-            } else if (checkBoxNon.checked == true) {
-                ("#toujoursService").val == 0;
-            }
             var data = $("#technicien_form").serialize();
             $.ajax({
                 data: {
                     type: 1,
                     nomTechnicien: $("#nomTechnicien").val(),
+                    prenomTechnicien: $("#prenomTechnicien").val(),
                     fonction: $("#fonction").val(),
-                    toujoursService: $("#toujoursService").val()
+                    toujoursService: $('input[name="toujoursService_a"]:checked').val(),
                 },
                 type: "post",
                 url: "php/saveTechnicien.php",
                 success: function(dataResult) {
-                    console.log(dataResult);
-                    var dataResult = JSON.parse(dataResult);
+                    try {
+                        var dataResult = JSON.parse(dataResult);
+                    } catch (e) {
+                        if (e instanceof SyntaxError) {
+                            alert("Erreur lors de la requête !", true);
+                        } else {
+                            alert("Erreur lors de la requête !", false);
+                        }
+                    }
                     if (dataResult.statusCode == 200) {
                         $('#myModalTechnicienAdd').modal('hide');
                         alert('Données ajoutées avec succès !');
@@ -77,6 +101,9 @@ require_once('php/connect.php');
                     } else if (dataResult.statusCode == 201) {
                         alert(dataResult);
                     }
+                },
+                error: function(request, status, error) {
+                    alert(request.responseText);
                 }
             });
         });
@@ -85,28 +112,40 @@ require_once('php/connect.php');
         $(document).on('click', '.update', function(e) {
             var ttechnicienPK = $(this).attr("data-id");
             var nomTechnicien = $(this).attr("data-nom");
+            var prenomTechnicien = $(this).attr("data-prenom");
             var fonction = $(this).attr("data-fonction");
             var toujoursService = $(this).attr("data-service");
             $('#ttechnicienPK_u').val(ttechnicienPK);
             $('#nomTechnicien_u').val(nomTechnicien);
+            $('#prenomTechnicien_u').val(prenomTechnicien);
             $('#fonction_u').val(fonction);
             $('#toujoursService_u').val(toujoursService);
         });
 
         $(document).on('click', '#update', function(e) {
             var data = $("#update_form").serialize();
+            console.log($('input[name="toujoursService_u"]:checked').val());
             $.ajax({
                 data: {
                     type: 2,
-                    ttechnicienPK: $("ttechnicienPK_u").val(),
+                    ttechnicienPK: $('#ttechnicienPK_u').val(),
                     nomTechnicien: $("#nomTechnicien_u").val(),
+                    prenomTechnicien: $("#prenomTechnicien_u").val(),
                     fonction: $("#fonction_u").val(),
-                    toujoursService: $("#toujoursService_u").val()
+                    toujoursService: $('input[name="toujoursService_u"]:checked').val(),
                 },
                 type: "post",
                 url: "php/saveTechnicien.php",
                 success: function(dataResult) {
-                    var dataResult = JSON.parse(dataResult);
+                    try {
+                        var dataResult = JSON.parse(dataResult);
+                    } catch (e) {
+                        if (e instanceof SyntaxError) {
+                            alert("Erreur lors de la requête !", true);
+                        } else {
+                            alert("Erreur lors de la requête !", false);
+                        }
+                    }
                     if (dataResult.statusCode == 200) {
                         $('#myModalTechnicienUpdate').modal('hide');
                         alert('Données correctement modifiées !');
@@ -114,6 +153,9 @@ require_once('php/connect.php');
                     } else if (dataResult.statusCode == 201) {
                         alert(dataResult);
                     }
+                },
+                error: function(request, status, error) {
+                    alert(request.responseText);
                 }
             });
         });
@@ -138,6 +180,9 @@ require_once('php/connect.php');
                     $("#" + dataResult).remove();
                     alert('Données correctement supprimées !');
                     document.location.reload();
+                },
+                error: function(request, status, error) {
+                    alert(request.responseText);
                 }
             });
         });
@@ -146,7 +191,6 @@ require_once('php/connect.php');
 
 <body>
     <div id="wrapper">
-
         <!-- Navigation -->
         <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <!-- Brand and toggle get grouped for better mobile display -->
@@ -159,6 +203,25 @@ require_once('php/connect.php');
                 </button>
                 <a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
             </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-cog"></i> <?php echo $_SESSION["username"] ?> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="/stocks/caracteristiquesProduits.php"><i class="fas fa-microchip"></i>&nbsp;Modèles de produits</a></li>
+                        <li class="active"> <a href="/stocks/techniciens.php"><i class="fas fa-wrench"></i>&nbsp;Techniciens</a></li>
+                        <li> <a href="/stocks/lieuStockage.php"><i class="fas fa-box-open"></i>&nbsp;Lieux de stockage</a></li>
+                        <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
+                        <li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
+                        <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+                        <li class="divider"></li>
+                        <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
+                    </ul>
+                </li>
+            </ul>
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
@@ -169,31 +232,18 @@ require_once('php/connect.php');
                         <a href="stocks.php">Stocks</a>
                     </li>
                     <li>
-                        <a href="lieuStockage.php">Lieux de stockage</a>
-                    </li>
-                    <li>
-                        <a href="suivi.php">Suivi</a>
+                        <a href="sorties.php">Dernières sorties</a>
                     </li>
                     <li>
                         <a href="reforme.php">Réforme</a>
                     </li>
                     <li>
-                        <a href="sorties.php">Dernières sorties</a>
-                    </li>
-                    <li class="active">
-                        <a href="techniciens.php">Techniciens</a>
-                    </li>
-                    <li>
-                        <a href="marques.php">Marques</a>
-                    </li>
-                    <li>
-                        <a href="typesProduits.php">Types de produits</a>
+                        <a href="commandes.php">Commandes</a>
                     </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
         </nav>
-
         <div id="page-wrapper">
 
             <div class="container-fluid">
@@ -220,6 +270,7 @@ require_once('php/connect.php');
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th>Prénom</th>
                                         <th>Nom</th>
                                         <th>Fonction</th>
                                         <th>Toujours dans le service</th>
@@ -228,10 +279,11 @@ require_once('php/connect.php');
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $result = mysqli_query($conn, "SELECT * FROM ttechnicien");
+                                    $result = mysqli_query($conn, "SELECT * FROM ttechnicien ORDER BY nomTechnicien, prenomTechnicien");
                                     while ($row = mysqli_fetch_array($result)) {
                                     ?>
                                         <tr ttechnicienPK="<?php echo $row["ttechnicienPK"]; ?>">
+                                            <td><?php echo $row["prenomTechnicien"]; ?></td>
                                             <td><?php echo $row["nomTechnicien"]; ?></td>
                                             <td><?php echo $row["fonction"]; ?></td>
                                             <td><?php
@@ -241,10 +293,10 @@ require_once('php/connect.php');
                                                     echo "Non";
                                                 } ?>
                                             <td>
-                                                <button class="view btn btn-success" data-target="#myModalTechnicienView" data-toggle="modal" data-id="<?php echo $row["ttechnicienPK"]; ?>" data-nom="<?php echo $row["nomTechnicien"]; ?>" data-fonction="<?php echo $row["fonction"]; ?>" data-service="<?php echo $row["toujoursService"]; ?>">
+                                                <button class="view btn btn-success" data-target="#myModalTechnicienView" data-toggle="modal" data-id="<?php echo $row["ttechnicienPK"]; ?>" data-nom="<?php echo $row["nomTechnicien"]; ?>" data-prenom="<?php echo $row["prenomTechnicien"]; ?>">
                                                     <i class="far fa-eye"></i>
                                                 </button>&nbsp;
-                                                <button class="update btn btn-primary" data-target="#myModalTechnicienUpdate" data-toggle="modal" data-id="<?php echo $row["ttechnicienPK"]; ?>" data-nom="<?php echo $row["nomTechnicien"]; ?>" data-fonction="<?php echo $row["fonction"]; ?>" data-service="<?php echo $row["toujoursService"]; ?>">
+                                                <button class="update btn btn-primary" data-target="#myModalTechnicienUpdate" data-toggle="modal" data-id="<?php echo $row["ttechnicienPK"]; ?>" data-nom="<?php echo $row["nomTechnicien"]; ?>" data-prenom="<?php echo $row["prenomTechnicien"]; ?>" data-fonction="<?php echo $row["fonction"]; ?>" data-service="<?php echo $row["toujoursService"]; ?>">
                                                     <i class="fas fa-pen"></i>
                                                 </button>&nbsp;
                                                 <button class="delete btn btn-danger" data-target="#myModalTechnicienDelete" data-toggle="modal" data-id="<?php echo $row["ttechnicienPK"]; ?>">
@@ -294,6 +346,12 @@ require_once('php/connect.php');
                                     </td>
                                 </tr>
                                 <tr>
+                                    <th>Prénom</th>
+                                    <td>
+                                        <input class="form-control" id="prenomTechnicien" name="prenomTechnicien" size="40px" value="" required><b></b>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <th>Fonction</th>
                                     <td>
                                         <input class="form-control" id="fonction" name="fonction" size="40px" value="" required><b></b>
@@ -302,12 +360,8 @@ require_once('php/connect.php');
                                 <tr>
                                     <th>Est-il toujours dans le service ?</th>
                                     <td>
-                                        <fieldset>
-                                            <input type="radio" id="ouiService" name="toujoursService" value="1">
-                                            <label for="ouiService">Oui</label>
-                                            <input type="radio" id="nonService" name="toujoursService" value="0">
-                                            <label for="nonService">Non</label>
-                                        </fieldset>
+                                        <input type="radio" id="toujoursService_a" name="toujoursService_a" value="1" checked>&nbsp;Oui
+                                        <input type="radio" id="toujoursService_a" name="toujoursService_a" value="0">&nbsp;Non
                                     </td>
                                 </tr>
                             </form>
@@ -331,7 +385,7 @@ require_once('php/connect.php');
                 <!-- Modal Header -->
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Liste des produits ajoutés par <?php echo '$nomTechnicien'; ?></h4>
+                    <h4 class="modal-title" id="afficherViewTechnicien"></h4>
                 </div>
                 <!-- Modal body -->
                 <div class="modal-body">
@@ -340,13 +394,14 @@ require_once('php/connect.php');
                         <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
                             <thead>
                                 <tr>
-                                    <th>Nom du produit</th>
-                                    <th>Type de produit</th>
-                                    <th>Marque</th>
+                                    <th>Fabricant</th>
+                                    <th>Modèle</th>
+                                    <th>Désignation</th>
+                                    <th>Quantité</th>
                                     <th>Lieu de stockage</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="technicien_details">
                             </tbody>
                         </table>
                     </div>
@@ -370,24 +425,39 @@ require_once('php/connect.php');
                         <div id="doubleU" style="display: none;"></div>
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                                <input type="hidden" id="ttypeproduitsPK_u" name="ttypeproduitsPK" class="form-control" required>
-                                <tr>
-                                    <th>Nom du technicien</th>
-                                    <td>
-                                        <input type="text" id="nomTypeProduit_u" name="nom" class="form-control" value="<?php echo '$nomTypeProduit'; ?>" required>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Nom du technicien</th>
-                                    <td>
-                                        <input type="text" id="nomTypeProduit_u" name="nom" class="form-control" value="<?php echo '$nomTypeProduit'; ?>" required>
-                                    </td>
-                                </tr>
+                                <form id="technicien_form">
+                                    <tr>
+                                        <th>Nom</th>
+                                        <td>
+                                            <input class="form-control" id="nomTechnicien_u" name="nomTechnicien_u" size="40px" value="" required><b></b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Prénom</th>
+                                        <td>
+                                            <input class="form-control" id="prenomTechnicien_u" name="prenomTechnicien_u" size="40px" value="" required><b></b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Fonction</th>
+                                        <td>
+                                            <input class="form-control" id="fonction_u" name="fonction_u" size="40px" value="" required><b></b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Est-il toujours dans le service ?</th>
+                                        <td>
+                                            <input type="radio" id="toujoursService_u" name="toujoursService_u" value="1">&nbsp;Oui
+                                            <input type="radio" id="toujoursService_u" name="toujoursService_u" value="0">&nbsp;Non
+                                        </td>
+                                    </tr>
+                                </form>
                             </table>
                         </div>
                     </div>
                     <!-- Modal footer -->
                     <div class="modal-footer">
+                        <input type="hidden" id="ttechnicienPK_u" name="ttechnicienPK" name="type">
                         <button type="button" class="btn btn-primary" id="update">Modifier</button>
                         <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
                     </div>
@@ -421,17 +491,33 @@ require_once('php/connect.php');
         </div>
     </div>
 
+    <script>
+        /* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+        function myFunction() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                var i;
+                for (i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- jQuery Version 1.11.0 -->
     <script src="js/jquery-1.11.0.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
-
-    <!-- Morris Charts JavaScript -->
-    <script src="js/plugins/morris/raphael.min.js"></script>
-    <script src="js/plugins/morris/morris.min.js"></script>
-    <script src="js/plugins/morris/morris-data.js"></script>
-
 </body>
 
 </html>

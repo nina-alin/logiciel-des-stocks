@@ -1,3 +1,14 @@
+<?php
+// Initialiser la session
+session_start();
+require_once('php/connect.php');
+// Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
+if (!isset($_SESSION["username"])) {
+	header("Location: login.php");
+	exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -6,7 +17,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="description" content="">
-	<meta name="author" content="">
+	<meta name="author" content="Nina Alin">
 
 	<title>Logiciel des stocks</title>
 
@@ -28,8 +39,6 @@
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-
 	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 	<!--[if lt IE 9]>
@@ -37,10 +46,37 @@
 			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 		<![endif]-->
 </head>
+<script>
+	// DELETE
+	$(document).on("click", ".delete", function() {
+		var tproduitsstockesPK = $(this).attr("data-id");
+		$('#tproduitsstockesPK_d').val(tproduitsstockesPK);
+	});
+
+	$(document).on("click", "#delete", function() {
+		$.ajax({
+			url: "php/saveDashboard.php",
+			type: "POST",
+			cache: false,
+			data: {
+				type: 3,
+				tproduitsstockesPK: $("#tproduitsstockesPK_d").val()
+			},
+			success: function(dataResult) {
+				$('#myModalAlertDelete').modal('hide');
+				$("#" + dataResult).remove();
+				alert('Alerte correctement supprimée !');
+				document.location.reload();
+			},
+			error: function(request, status, error) {
+				alert(request.responseText);
+			}
+		});
+	});
+</script>
 
 <body>
 	<div id="wrapper">
-
 		<!-- Navigation -->
 		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 			<!-- Brand and toggle get grouped for better mobile display -->
@@ -53,6 +89,25 @@
 				</button>
 				<a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
 			</div>
+			<!-- /.navbar-header -->
+
+			<ul class="nav navbar-top-links navbar-right">
+				<li class="dropdown">
+					<a class="dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-cog"></i> <?php echo $_SESSION["username"] ?> <i class="fa fa-caret-down"></i>
+					</a>
+					<ul class="dropdown-menu dropdown-user">
+						<li><a href="/stocks/caracteristiquesProduits.php"><i class="fas fa-microchip"></i>&nbsp;Modèles de produits</a></li>
+						<li> <a href="/stocks/techniciens.php"><i class="fas fa-wrench"></i>&nbsp;Techniciens</a></li>
+						<li> <a href="/stocks/lieuStockage.php"><i class="fas fa-box-open"></i>&nbsp;Lieux de stockage</a></li>
+						<li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
+						<li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
+						<li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+						<li class="divider"></li>
+						<li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
+					</ul>
+				</li>
+			</ul>
 			<!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
@@ -63,25 +118,13 @@
 						<a href="stocks.php">Stocks</a>
 					</li>
 					<li>
-						<a href="lieuStockage.php">Lieux de stockage</a>
-					</li>
-					<li>
-						<a href="suivi.php">Suivi</a>
+						<a href="sorties.php">Dernières sorties</a>
 					</li>
 					<li>
 						<a href="reforme.php">Réforme</a>
 					</li>
 					<li>
-						<a href="sorties.php">Dernières sorties</a>
-					</li>
-					<li>
-						<a href="techniciens.php">Techniciens</a>
-					</li>
-					<li>
-						<a href="marques.php">Marques</a>
-					</li>
-					<li>
-						<a href="typesProduits.php">Types de produits</a>
+						<a href="commandes.php">Commandes</a>
 					</li>
 				</ul>
 			</div>
@@ -100,113 +143,127 @@
 						</h1>
 					</div>
 				</div>
-				<!-- /.row -->
-
-				<div class="row">
-					<div class="col-lg-12">
-						<div class="panel panel-danger">
-							<div class="panel-heading">
-								<div class="panel-body">
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Alerte</h3>
-											</div>
-										</div>
-									</div>
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Alerte</h3>
-											</div>
-										</div>
-									</div>
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Alerte</h3>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- /.row -->
-
-				<!-- Page Heading -->
-				<div class="row">
-					<div class="col-lg-12">
-						<h1 class="page-header text-success">
-							Chiffres clés
-							<input type="date" name="dateofbirth" id="dateofbirth">
-						</h1>
-					</div>
-				</div>
-				<!-- /.row -->
-
-				<div class="row">
-					<div class="col-lg-12">
-						<div class="panel panel-success">
-							<div class="panel-heading">
-								<div class="panel-body">
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Success</h3>
-											</div>
-										</div>
-									</div>
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Success</h3>
-											</div>
-										</div>
-									</div>
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Success</h3>
-											</div>
-										</div>
-									</div>
-									<div class="col-lg-3">
-										<div class="panel">
-											<div class="panel-body">
-												<h3 class="text-center">Success</h3>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- /.row -->
-
 			</div>
-			<!-- /.container-fluid -->
+			<!-- /.row -->
+
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="panel panel-danger">
+						<div class="panel-heading">
+							<div class="panel-body">
+								<?php
+								$result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tcaracteristiquesproduits ON tproduitsstockes.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK");
+								while ($row = mysqli_fetch_array($result)) {
+									if ($row["quantite"] < 3 && $row["quantite"] != null && $row["alerte"] == 1) {
+								?>
+										<div class="col-lg-3">
+											<div class="panel">
+												<div class="panel-header">
+													<button type="button" class="delete close" data-target="#myModalAlertDelete" data-toggle="modal" data-id="<?php echo $row["tproduitsstockesPK"]; ?>">&times;</button>
+												</div>
+												<div class="panel-body">
+													<h3 class="text-center"><?php echo $row["nomFabricant"] ?>&nbsp;<?php echo $row["nomModele"] ?><br />Reste&nbsp;<?php echo $row["quantite"] ?></h3>
+												</div>
+											</div>
+										</div>
+								<?php
+									}
+								}
+								?>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /.row -->
+
+			<!-- Page Heading -->
+			<div class="row">
+				<div class="col-lg-12">
+					<h1 class="page-header text-success">
+						Chiffres clés
+						<input type="date" name="dateofbirth" id="dateofbirth">
+					</h1>
+				</div>
+			</div>
+			<!-- /.row -->
+
+			<div class="row">
+				<div class="col-lg-12">
+					<div class="panel panel-success">
+						<div class="panel-heading">
+							<div class="panel-body">
+								<div class="col-lg-3">
+									<div class="panel">
+										<div class="panel-body">
+											<h3 class="text-center">Success</h3>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-3">
+									<div class="panel">
+										<div class="panel-body">
+											<h3 class="text-center">Success</h3>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-3">
+									<div class="panel">
+										<div class="panel-body">
+											<h3 class="text-center">Success</h3>
+										</div>
+									</div>
+								</div>
+								<div class="col-lg-3">
+									<div class="panel">
+										<div class="panel-body">
+											<h3 class="text-center">Success</h3>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /.row -->
 
 		</div>
-		<!-- /#page-wrapper -->
+		<!-- /.container-fluid -->
 
 	</div>
+	<!-- /#page-wrapper -->
 
-	<!-- /#wrapper -->
+	<!-- The Modal Alerte Delete-->
+	<div class="modal fade" id="myModalAlertDelete">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<form>
+					<!-- Modal Header -->
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						<h4 class="modal-title">Supprimer une alerte</h4>
+					</div>
+					<div class="modal-body">
+						<input type="hidden" id="tproduitsstockesPK_d" name="tproduitsstockesPK" class="form-control">
+						<p>Êtes-vous sûr de vouloir cette alerte ?</p>
+						<p class="text-warning"><small>Pour la réactiver, rendez-vous à la page <a href="./stocks.php">stocks</a>.</small></p>
+					</div>
+					<!-- Modal footer -->
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" id="delete">Supprimer</button>
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
 
 	<!-- jQuery Version 1.11.0 -->
 	<script src="js/jquery-1.11.0.js"></script>
 
 	<!-- Bootstrap Core JavaScript -->
 	<script src="js/bootstrap.min.js"></script>
-
-	<!-- Morris Charts JavaScript -->
-	<script src="js/plugins/morris/raphael.min.js"></script>
-	<script src="js/plugins/morris/morris.min.js"></script>
-	<script src="js/plugins/morris/morris-data.js"></script>
-
 </body>
 
 </html>

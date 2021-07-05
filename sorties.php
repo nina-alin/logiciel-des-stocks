@@ -1,6 +1,12 @@
 <?php
-// On inclut la connexion à la base
+// Initialiser la session
+session_start();
 require_once('php/connect.php');
+// Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
+if (!isset($_SESSION["username"])) {
+    header("Location: login.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -35,128 +41,16 @@ require_once('php/connect.php');
 
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
 
-    <!--Calendar script-->
-    <script src="js/jsSimpleDatePickr.2.1.js"></script>
-
-
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
 			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
 			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 		<![endif]-->
-    <script>
-        // quelques variables globales
-        var theProductSelected;
-        var tProduitPK;
-
-        $(function() {
-
-            // on récupère la liste des produits
-            $.ajax({
-                type: "GET",
-                url: "php/readtProduit.php",
-                success: function(response) {
-                    loadProduit();
-                },
-                error: function(resultat, statut, erreur) {},
-            });
-
-
-
-            // Si on veut modifier les données d'un produit
-            $(document).on('click', "#produitUpdate", function(event) {
-                tProduitPK = $(this).attr("ident");
-                loadProduit(tProduitPK);
-            });
-
-            // on met à jour un produit
-            $(document).on('click', "#updateProduit", function() {
-                tTypeProduitFK = $("#tTypeProduitFK").val();
-                nomProduit = $("#nomProduit").val();
-                compatibilite = $("#compatibilite").val();
-                codeProduit = $("#codeProduit").val();
-                marque = $("#marque").val();
-                quantiteTotale = $("#quantiteTotale").val();
-                var produitInfo = {
-                    "id": tProduitPK,
-                    "nomProduit": nomProduit,
-                    "compatibilite": compatibilite,
-                    "codeProduit": codeProduit,
-                    "marque": marque,
-                    "quantiteTotale": quantiteTotale
-                };
-                $.ajax({
-                    type: "POST",
-                    url: "php/updatetProduit.php",
-                    data: JSON.stringify(produitInfo),
-                    success: function(response) {
-                        loadProduit();
-                        alert(response.message);
-                    },
-                    error: function(resultat, statut, erreur) {},
-                });
-            });
-
-            // Si on veut supprimer un libellé
-            $(document).on('click', "#produitDelete", function(event) {
-                tProduitPK = $(this).attr("ident"); // lors d'un clic sur la poubelle
-            });
-
-
-            $(document).on('click', "#deleteProduit", function(event) {
-                var produitInfo = {
-                    "tProduitPK": tProduitPK, // récupéré lors du clic sur la poubelle
-                };
-                $.ajax({
-                    type: "DELETE",
-                    url: "php/deletetProduit.php",
-                    data: JSON.stringify(produitInfo),
-                    success: function(response) {
-                        loadProduit();
-                        alert(response.message);
-                    },
-                    error: function(resultat, statut, erreur) {},
-                });
-            });
-
-        });
-
-        function loadProduit() {
-            $.ajax({
-                type: "GET",
-                url: "php/readtProduit.php",
-                success: produitSuccess,
-                error: function(resultat, statut, erreur) {},
-                complete: function(resultat, statut) {}
-            });
-        }
-
-
-        function produitSuccess(jsonDatas) {
-            var dropDownList = "";
-            $.each(jsonDatas, function(key1, value1) {
-                $.each(value1, function(key2, value2) {
-                    if (key2 == "codeProduit")
-                        codeProduit = value2;
-                    if (key2 == "nomTypeProduit")
-                        nomTypeProduit = value2;
-                    if (key2 == "marque")
-                        marque = value2;
-                    if (key2 == "nomProduit")
-                        nomProduit = value2;
-                    if (key2 == "quantiteTotale")
-                        dropDownList += '<tr><td>' + codeProduit + '</td><td></td><td>' + marque + '</td><td>' + nomProduit + '</td><td>' + value2 + '</td><td><button class="btn btn-primary" data-target="#myModalProductUpdate" data-toggle="modal"><i class="fas fa-pen"></i></button>&nbsp;<button class="btn btn-danger" data-target="#myModalProductDelete" data-toggle="modal"><i class="fas fa-trash-alt"></i></button></td></tr>';
-                });
-            });
-            $("#produitList").html(dropDownList);
-        }
-    </script>
 </head>
 
 <body>
     <div id="wrapper">
-
         <!-- Navigation -->
         <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <!-- Brand and toggle get grouped for better mobile display -->
@@ -169,6 +63,25 @@ require_once('php/connect.php');
                 </button>
                 <a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
             </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-cog"></i> <?php echo $_SESSION["username"] ?> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="/stocks/caracteristiquesProduits.php"><i class="fas fa-microchip"></i>&nbsp;Modèles de produits</a></li>
+                        <li> <a href="/stocks/techniciens.php"><i class="fas fa-wrench"></i>&nbsp;Techniciens</a></li>
+                        <li> <a href="/stocks/lieuStockage.php"><i class="fas fa-box-open"></i>&nbsp;Lieux de stockage</a></li>
+                        <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
+                        <li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
+                        <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+                        <li class="divider"></li>
+                        <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
+                    </ul>
+                </li>
+            </ul>
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
@@ -178,32 +91,19 @@ require_once('php/connect.php');
                     <li>
                         <a href="stocks.php">Stocks</a>
                     </li>
-                    <li>
-                        <a href="lieuStockage.php">Lieux de stockage</a>
-                    </li>
-                    <li>
-                        <a href="suivi.php">Suivi</a>
-                    </li>
-                    <li>
-                        <a href="reforme.php">Réforme</a>
-                    </li>
                     <li class="active">
                         <a href="sorties.php">Dernières sorties</a>
                     </li>
                     <li>
-                        <a href="techniciens.php">Techniciens</a>
+                        <a href="reforme.php">Réforme</a>
                     </li>
                     <li>
-                        <a href="marques.php">Marques</a>
-                    </li>
-                    <li>
-                        <a href="typesProduits.php">Types de produits</a>
+                        <a href="commandes.php">Commandes</a>
                     </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
         </nav>
-
         <div id="page-wrapper">
 
             <div class="container-fluid">
@@ -215,12 +115,6 @@ require_once('php/connect.php');
                             Dernières sorties
                         </h1>
                     </div>
-                    <br /><br />
-                    <div class="col-1">
-                        <button class="btn btn-warning" data-target="#myModalLibelleAdd" data-toggle="modal">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
                 </div>
                 <!-- /.row -->
 
@@ -230,35 +124,28 @@ require_once('php/connect.php');
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Produit</th>
-                                        <th>Catégorie</th>
-                                        <th>Marque</th>
+                                        <th>Désignation</th>
                                         <th>Raison de sortie</th>
                                         <th>Lieu de sortie</th>
-                                        <th>Technicien</th>
+                                        <th>Numéro de série</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $result = mysqli_query($conn, "SELECT * FROM tsorties JOIN ttechnicien ON tsorties.ttechnicienFK = ttechnicien.ttechnicienPK JOIN tproduits ON tsorties.tproduitsFK = tproduits.tproduitsPK JOIN tcaracteristiquesproduits ON tcaracteristiquesproduits.tcaracteristiquesproduitsPK = tproduits.tcaracteristiquesproduitsFK JOIN tmarques ON tmarques.tmarquesPK = tcaracteristiquesproduits.tmarquesFK JOIN ttypeproduits ON tcaracteristiquesproduits.ttypeproduitsFK = ttypeproduits.ttypeproduitsPK;");
+                                    $result = mysqli_query($conn, "SELECT * FROM tsorties JOIN tcaracteristiquesproduits ON tcaracteristiquesproduits.tcaracteristiquesproduitsPK = tsorties.tcaracteristiquesproduitsFK JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK JOIN tlieusortie ON tsorties.tlieusortieFK = tlieusortie.tlieusortiePK JOIN ttypeproduits ON tcaracteristiquesproduits.ttypeproduitsFK = ttypeproduits.ttypeproduitsPK JOIN ttechnicien ON ttechnicien.ttechnicienPK = tsorties.ttechnicienFK JOIN tunitegestion ON tunitegestion.tunitegestionPK = tlieusortie.tunitegestionFK ORDER BY 1 DESC");
                                     while ($row = mysqli_fetch_array($result)) {
                                     ?>
                                         <tr tproduitsstockes="<?php echo $row["tsortiesPK"]; ?>">
-                                            <td><?php echo $row["nomModele"]; ?></td>
-                                            <td><?php echo $row["nomTypeProduit"]; ?></td>
-                                            <td><?php echo $row["nomMarque"]; ?></td>
+                                            <td><?php echo $row["nomFabricant"]; ?>&nbsp;<?php echo $row["nomModele"]; ?></td>
                                             <td><?php echo $row["raisonSortie"]; ?></td>
-                                            <td><?php echo $row["lieuSortie"]; ?></td>
-                                            <td><?php echo $row["nomTechnicien"]; ?></td>
+                                            <td><?php echo $row["nomUniteGestion"]; ?>&nbsp;-&nbsp;<?php echo $row["nomLieuSortie"]; ?></td>
+                                            <td><?php echo $row["numeroSerie"]; ?></td>
                                             <td>
-                                                <button class="view btn btn-success" data-target="#myModalTypeProduitView" data-toggle="modal" data-id="<?php echo $row["ttypeproduitsPK"]; ?>" data-nom="<?php echo $row["nomTypeProduit"]; ?>">
-                                                    <i class="far fa-eye"></i>
-                                                </button>&nbsp;
-                                                <button class="update btn btn-primary" data-target="#myModalTypeProduitUpdate" data-toggle="modal" data-id="<?php echo $row["ttypeproduitsPK"]; ?>" data-nom="<?php echo $row["nomTypeProduit"]; ?>">
+                                                <button class="update btn btn-primary" data-target="#myModalTypeProduitUpdate" data-toggle="modal" data-id="<?php echo $row["tsortiesPK"]; ?>" data-nom="<?php echo $row["nomTypeProduit"]; ?>">
                                                     <i class="fas fa-pen"></i>
                                                 </button>&nbsp;
-                                                <button class="delete btn btn-danger" data-target="#myModalTypeProduitDelete" data-toggle="modal" data-id="<?php echo $row["ttypeproduitsPK"]; ?>">
+                                                <button class="delete btn btn-danger" data-target="#myModalTypeProduitDelete" data-toggle="modal" data-id="<?php echo $row["tsortiesPK"]; ?>">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </td>
@@ -354,17 +241,33 @@ require_once('php/connect.php');
         </div>
     </div>
 
+    <script>
+        /* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+        function myFunction() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                var i;
+                for (i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- jQuery Version 1.11.0 -->
     <script src="js/jquery-1.11.0.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
-
-    <!-- Morris Charts JavaScript -->
-    <script src="js/plugins/morris/raphael.min.js"></script>
-    <script src="js/plugins/morris/morris.min.js"></script>
-    <script src="js/plugins/morris/morris-data.js"></script>
-
 </body>
 
 </html>

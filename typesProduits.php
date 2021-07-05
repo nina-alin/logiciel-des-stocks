@@ -1,6 +1,12 @@
 <?php
-// On inclut la connexion à la base
+// Initialiser la session
+session_start();
 require_once('php/connect.php');
+// Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
+if (!isset($_SESSION["username"])) {
+    header("Location: login.php");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -48,76 +54,23 @@ require_once('php/connect.php');
         var ttypeproduitsPK = $(this).attr("data-id");
         var nomTypeProduit = $(this).attr("data-nom");
         document.getElementById("afficherNomTypeProduit").innerHTML = "Liste des produits de type " + nomTypeProduit;
-
-        console.log(ttypeproduitsPK);
-
         $.ajax({
-            type: "GET",
+            url: "php/saveTypeProduits.php",
+            method: "GET",
             data: {
                 type: 4,
                 ttypeproduitsPK: ttypeproduitsPK
             },
-            url: "php/saveTypeProduits.php",
-            success: typeProduitSuccess,
-            error: function(resultat, statut, erreur) {},
-            complete: function(resultat, statut) {}
+            success: function(dataResult) {
+                $('#typeProduits_details').html(dataResult);
+                $('#myModalTypeProduitView').modal('show');
+            },
+            error: function(request, status, error) {
+                alert(request.responseText);
+            }
         });
-
-        function typeProduitSuccess(jsonDatas) {
-            var dropDownList = "";
-            console.log(jsonDatas);
-            $.each(jsonDatas, function(key1, value1) {
-                $.each(value1, function(key2, value2) {
-                    if (key2 == "tLibellePK")
-                        tLibellePK = value2;
-                    if (key2 == "nom")
-                        nom = value2;
-                    if (key2 == "nomEmplacement")
-                        dropDownList += '<tr><td>' + nom + '</td><td>' + value2 + '</td><td><button class="btn btn-success" data-target="#myModalLibelleView" data-toggle="modal"><i class="far fa-eye"></i></button>&nbsp;<button class="btn btn-primary" data-target="#myModalLibelleUpdate" data-toggle="modal"><i class="fas fa-pen"></i></button>&nbsp;<button class="btn btn-danger" data-target="#myModalLibelleDelete" data-toggle="modal"><i class="fas fa-trash-alt"></i></button></td></tr>';
-                });
-            });
-            $("#typeProduitList").html(dropDownList);
-        }
     });
 
-    /*  
-    
-    function libelleSuccess(jsonDatas) {
-			var dropDownList = "";
-			$.each(jsonDatas, function(key1, value1) {
-				$.each(value1, function(key2, value2) {
-					if (key2 == "tLibellePK")
-						tLibellePK = value2;
-					if (key2 == "nom")
-						nom = value2;
-					if (key2 == "nomEmplacement")
-						dropDownList += '<tr><td>' + nom + '</td><td>' + value2 + '</td><td><button class="btn btn-success" data-target="#myModalLibelleView" data-toggle="modal"><i class="far fa-eye"></i></button>&nbsp;<button class="btn btn-primary" data-target="#myModalLibelleUpdate" data-toggle="modal"><i class="fas fa-pen"></i></button>&nbsp;<button class="btn btn-danger" data-target="#myModalLibelleDelete" data-toggle="modal"><i class="fas fa-trash-alt"></i></button></td></tr>';
-				});
-			});
-			$("#libelleList").html(dropDownList);
-		}
-
-    $(document).on('click', '#view', function(e) {
-          var data = $("#view_form").serialize();
-          $.ajax({
-              data: {
-                  type: 0,
-                  ttypeproduitsPK: $("#ttypeproduitsPK_v").val(),
-              },
-              type: "get",
-              url: "php/saveTypeProduits.php",
-              success: function(dataResult) {
-                  var dataResult = JSON.parse(dataResult);
-                  if (dataResult.statusCode == 200) {
-                      $('#myModalTypeProduitUpdate').modal('hide');
-                      alert('Données correctement modifiées !');
-                      location.reload();
-                  } else if (dataResult.statusCode == 201) {
-                      alert(dataResult);
-                  }
-              }
-          });
-      });*/
 
     // POST
     $(document).on('click', '#btn-add', function(e) {
@@ -130,7 +83,15 @@ require_once('php/connect.php');
             type: "post",
             url: "php/saveTypeProduits.php",
             success: function(dataResult) {
-                var dataResult = JSON.parse(dataResult);
+                try {
+                    var dataResult = JSON.parse(dataResult);
+                } catch (e) {
+                    if (e instanceof SyntaxError) {
+                        alert("Erreur lors de la requête !", true);
+                    } else {
+                        alert("Erreur lors de la requête !", false);
+                    }
+                }
                 if (dataResult.statusCode == 200) {
                     $('#myModalTypeProduitAdd').modal('hide');
                     alert('Données ajoutées avec succès !');
@@ -138,6 +99,9 @@ require_once('php/connect.php');
                 } else if (dataResult.statusCode == 201) {
                     alert(dataResult);
                 }
+            },
+            error: function(request, status, error) {
+                alert(request.responseText);
             }
         });
     });
@@ -146,6 +110,7 @@ require_once('php/connect.php');
     $(document).on('click', '.update', function(e) {
         var ttypeproduitsPK = $(this).attr("data-id");
         var nomTypeProduit = $(this).attr("data-nom");
+        document.getElementById("afficherUpdateNomTypeProduit").innerHTML = "Modifier " + nomTypeProduit;
         $('#ttypeproduitsPK_u').val(ttypeproduitsPK);
         $('#nomTypeProduit_u').val(nomTypeProduit);
     });
@@ -161,7 +126,16 @@ require_once('php/connect.php');
             type: "post",
             url: "php/saveTypeProduits.php",
             success: function(dataResult) {
-                var dataResult = JSON.parse(dataResult);
+                console.log(dataResult);
+                try {
+                    var dataResult = JSON.parse(dataResult);
+                } catch (e) {
+                    if (e instanceof SyntaxError) {
+                        alert("Erreur lors de la requête !", true);
+                    } else {
+                        alert("Erreur lors de la requête !", false);
+                    }
+                }
                 if (dataResult.statusCode == 200) {
                     $('#myModalTypeProduitUpdate').modal('hide');
                     alert('Données correctement modifiées !');
@@ -169,6 +143,9 @@ require_once('php/connect.php');
                 } else if (dataResult.statusCode == 201) {
                     alert(dataResult);
                 }
+            },
+            error: function(request, status, error) {
+                alert(request.responseText);
             }
         });
     });
@@ -193,6 +170,9 @@ require_once('php/connect.php');
                 $("#" + dataResult).remove();
                 alert('Données correctement supprimées !');
                 location.reload();
+            },
+            error: function(request, status, error) {
+                alert(request.responseText);
             }
         });
     });
@@ -212,6 +192,25 @@ require_once('php/connect.php');
                 </button>
                 <a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
             </div>
+            <!-- /.navbar-header -->
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown">
+                        <i class="fa fa-cog"></i> <?php echo $_SESSION["username"] ?> <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li><a href="/stocks/caracteristiquesProduits.php"><i class="fas fa-microchip"></i>&nbsp;Modèles de produits</a></li>
+                        <li> <a href="/stocks/techniciens.php"><i class="fas fa-wrench"></i>&nbsp;Techniciens</a></li>
+                        <li> <a href="/stocks/lieuStockage.php"><i class="fas fa-box-open"></i>&nbsp;Lieux de stockage</a></li>
+                        <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
+                        <li class="active"><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
+                        <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+                        <li class="divider"></li>
+                        <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
+                    </ul>
+                </li>
+            </ul>
             <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
@@ -222,31 +221,18 @@ require_once('php/connect.php');
                         <a href="stocks.php">Stocks</a>
                     </li>
                     <li>
-                        <a href="lieuStockage.php">Lieux de stockage</a>
-                    </li>
-                    <li>
-                        <a href="suivi.php">Suivi</a>
+                        <a href="sorties.php">Dernières sorties</a>
                     </li>
                     <li>
                         <a href="reforme.php">Réforme</a>
                     </li>
                     <li>
-                        <a href="sorties.php">Dernières sorties</a>
-                    </li>
-                    <li>
-                        <a href="techniciens.php">Techniciens</a>
-                    </li>
-                    <li>
-                        <a href="marques.php">Marques</a>
-                    </li>
-                    <li class="active">
-                        <a href="typesProduits.php">Types de produits</a>
+                        <a href="commandes.php">Commandes</a>
                     </li>
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
         </nav>
-
         <div id="page-wrapper">
 
             <div class="container-fluid">
@@ -279,7 +265,7 @@ require_once('php/connect.php');
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $result = mysqli_query($conn, "SELECT * FROM ttypeproduits");
+                                    $result = mysqli_query($conn, "SELECT * FROM ttypeproduits ORDER BY nomTypeProduit");
                                     while ($row = mysqli_fetch_array($result)) {
                                     ?>
                                         <tr ttypeproduitsPK="<?php echo $row["ttypeproduitsPK"]; ?>">
@@ -367,24 +353,14 @@ require_once('php/connect.php');
                         <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
                             <thead>
                                 <tr>
-                                    <th>Nom du produit</th>
-                                    <th>Marque</th>
-                                    <th>Lieu de stockage</th>
+                                    <th>Fabricant</th>
+                                    <th>Modèle</th>
+                                    <th>Quantité</th>
+                                    <th>Code Produit</th>
+                                    <th>Emplacement</th>
                                 </tr>
                             </thead>
-                            <tbody id="typeProduitList">
-                                <?php
-                                $result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK JOIN tproduits ON tproduitsstockes.tproduitsFK = tproduits.tproduitsPK JOIN tcaracteristiquesproduits ON tproduits.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tmarques ON tmarques.tmarquesPK = tcaracteristiquesproduits.tmarquesFK JOIN templacements ON templacements.templacementsPK = tlibelles.templacementsFK");
-                                while ($row = mysqli_fetch_array($result)) {
-                                ?>
-                                    <tr tlibellesPK="<?php echo $row["tproduitsstockesPK"]; ?>">
-                                        <td><?php echo $row["nomModele"]; ?></td>
-                                        <td><?php echo $row["nomMarque"]; ?></td>
-                                        <td><?php echo $row["nomEmplacement"]; ?></td>
-                                    </tr>
-                                <?php
-                                }
-                                ?>
+                            <tbody id="typeProduits_details">
                             </tbody>
                         </table>
                     </div>
@@ -401,7 +377,7 @@ require_once('php/connect.php');
                     <!-- Modal Header -->
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Modifier un produit</h4>
+                        <h4 class="modal-title" id="afficherUpdateNomTypeProduit"></h4>
                     </div>
                     <!-- Modal body -->
                     <div class="modal-body">
@@ -453,17 +429,33 @@ require_once('php/connect.php');
         </div>
     </div>
 
+    <script>
+        /* When the user clicks on the button, 
+toggle between hiding and showing the dropdown content */
+        function myFunction() {
+            document.getElementById("myDropdown").classList.toggle("show");
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                var i;
+                for (i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+
     <!-- jQuery Version 1.11.0 -->
     <script src="js/jquery-1.11.0.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
-
-    <!-- Morris Charts JavaScript -->
-    <script src="js/plugins/morris/raphael.min.js"></script>
-    <script src="js/plugins/morris/morris.min.js"></script>
-    <script src="js/plugins/morris/morris-data.js"></script>
-
 </body>
 
 </html>

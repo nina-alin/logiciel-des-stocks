@@ -10,14 +10,14 @@ if (!isset($_SESSION["username"])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="author" content="Nina Alin">
 
     <title>Logiciel des stocks</title>
 
@@ -49,20 +49,40 @@ if (!isset($_SESSION["username"])) {
 		<![endif]-->
 </head>
 <script>
+    // GET
+    $(document).on('click', '.view', function(e) {
+        var tcommandesPK = $(this).attr("data-id");
+        var numeroCommande = $(this).attr("data-numero");
+        document.getElementById("afficherViewNumeroCommande").innerHTML = "Produits de la commande n°" + numeroCommande;
+        $.ajax({
+            url: "php/saveCommande.php",
+            method: "GET",
+            data: {
+                type: 4,
+                tcommandesPK: tcommandesPK
+            },
+            success: function(dataResult) {
+                $('#produitsCommandeList').html(dataResult);
+                $('#myModalCommandeView').modal('show');
+            },
+            error: function(request, status, error) {
+                alert(request.responseText);
+            }
+        });
+    });
+
     // POST
     $(document).on('click', '#btn-add', function(e) {
-        var data = $("#reforme_form").serialize();
+        var data = $("#commande_form").serialize();
         $.ajax({
             data: {
-                numeroSerie: $("#numeroSerie_a").val(),
-                dateReforme: $("#dateReforme_a").val(),
-                etatFonctionnement: $("#etatFonctionnement_a").val(),
-                ttechnicienFK: $("#ttechnicienFK_a").val(),
-                tcaracteristiquesproduitsFK: $("#tcaracteristiquesproduitsFK_a").val(),
+                numeroCommande: $("#numeroCommande_a").val(),
+                dateCommande: $("#dateCommande_a").val(),
+                arrivee: $('input[name="arrivee_a"]:checked').val(),
                 type: "1"
             },
             type: "post",
-            url: "php/saveReforme.php",
+            url: "php/saveCommande.php",
             success: function(dataResult) {
                 try {
                     var dataResult = JSON.parse(dataResult);
@@ -74,7 +94,7 @@ if (!isset($_SESSION["username"])) {
                     }
                 }
                 if (dataResult.statusCode == 200) {
-                    $('#myModalReformeAdd').modal('hide');
+                    $('#myModalCommandeAdd').modal('hide');
                     alert('Données correctement ajoutées !');
                     location.reload();
                 } else if (dataResult.statusCode == 201) {
@@ -88,34 +108,29 @@ if (!isset($_SESSION["username"])) {
     });
 
     $(document).on('click', '.update', function(e) {
-        var treformePK = $(this).attr("data-id");
-        var tcaracteristiquesproduitsFK = $(this).attr("data-id-caracteristiques");
-        var dateReforme = $(this).attr("data-date");
-        var etatFonctionnement = $(this).attr("data-fonctionnement");
-        var ttechnicienFK = $(this).attr("data-id-caracteristiques");
-        var numeroSerie = $(this).attr("data-numero");
-        $('#treformePK_u').val(treformePK);
-        $('#tcaracteristiquesproduitsFK_u').val(tcaracteristiquesproduitsFK);
-        $('#dateReforme_u').val(dateReforme);
-        $('#etatFonctionnement_u').val(etatFonctionnement);
-        $('#ttechnicienFK_u').val(ttechnicienFK);
-        $('#numeroSerie_u').val(numeroSerie);
+        var tcommandesPK = $(this).attr("data-id");
+        var numeroCommande = $(this).attr("data-numero");
+        var dateCommande = $(this).attr("data-date");
+        var arrivee = $(this).attr("data-arrivee");
+        document.getElementById("afficherUpdateNumeroCommande").innerHTML = "Modifier la commande n°" + numeroCommande;
+        $('#tcommandesPK_u').val(tcommandesPK);
+        $('#numeroCommande_u').val(numeroCommande);
+        $('#dateCommande_u').val(dateCommande);
+        $('input[name="arrivee_u"]:checked').val(arrivee);
     });
 
     $(document).on('click', '#update', function(e) {
         var data = $("#update_form").serialize();
         $.ajax({
             data: {
-                treformePK: $("#treformePK_u").val(),
-                tcaracteristiquesproduitsFK: $("#tcaracteristiquesproduitsFK_u").val(),
-                dateReforme: $("#dateReforme_u").val(),
-                etatFonctionnement: $("#etatFonctionnement_u").val(),
-                ttechnicienFK: $("#ttechnicienFK_u").val(),
-                numeroSerie: $("#numeroSerie_u").val(),
+                tcommandesPK: $("#tcommandesPK_u").val(),
+                numeroCommande: $("#numeroCommande_u").val(),
+                dateCommande: $("#dateCommande_u").val(),
+                arrivee: $('input[name="arrivee_u"]:checked').val(),
                 type: "2"
             },
             type: "post",
-            url: "php/saveReforme.php",
+            url: "php/saveCommande.php",
             success: function(dataResult) {
                 try {
                     var dataResult = JSON.parse(dataResult);
@@ -127,7 +142,8 @@ if (!isset($_SESSION["username"])) {
                     }
                 }
                 if (dataResult.statusCode == 200) {
-                    $('#myModalReformeUpdate').modal('hide');
+                    console.log(dataResult);
+                    $('#myModalCommandeUpdate').modal('hide');
                     alert('Données correctement modifiées !');
                     location.reload();
                 } else if (dataResult.statusCode == 201) {
@@ -142,21 +158,21 @@ if (!isset($_SESSION["username"])) {
 
 
     $(document).on("click", ".delete", function() {
-        var treformePK = $(this).attr("data-id");
-        $('#treformePK_d').val(treformePK);
+        var tcommandesPK = $(this).attr("data-id");
+        $('#tcommandesPK_d').val(tcommandesPK);
     });
 
     $(document).on("click", "#delete", function() {
         $.ajax({
-            url: "php/saveReforme.php",
+            url: "php/saveCommande.php",
             type: "POST",
             cache: false,
             data: {
                 type: 3,
-                treformePK: $("#treformePK_d").val()
+                tcommandesPK: $("#tcommandesPK_d").val()
             },
             success: function(dataResult) {
-                $('#myModalReformeDelete').modal('hide');
+                $('#myModalCommandeDelete').modal('hide');
                 $("#" + dataResult).remove();
                 alert('Données correctement supprimées !');
                 document.location.reload();
@@ -213,10 +229,10 @@ if (!isset($_SESSION["username"])) {
                     <li>
                         <a href="sorties.php">Dernières sorties</a>
                     </li>
-                    <li class="active">
+                    <li>
                         <a href="reforme.php">Réforme</a>
                     </li>
-                    <li>
+                    <li class="active">
                         <a href="commandes.php">Commandes</a>
                     </li>
                 </ul>
@@ -231,12 +247,12 @@ if (!isset($_SESSION["username"])) {
                 <div class="row">
                     <div class="col-lg-11">
                         <h1 class="page-header text-primary">
-                            Réforme
+                            Commandes
                         </h1>
                     </div>
                     <br /><br />
                     <div class="col-1">
-                        <button class="btn btn-warning" data-target="#myModalReformeAdd" data-toggle="modal">
+                        <button class="btn btn-warning" data-target="#myModalCommandeAdd" data-toggle="modal">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -249,32 +265,37 @@ if (!isset($_SESSION["username"])) {
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Fabricant</th>
-                                        <th>Produit</th>
-                                        <th>Technicien</th>
-                                        <th>Date de réforme</th>
-                                        <th>Numéro de série</th>
-                                        <th>État de fonctionnement</th>
+                                        <th>Numéro de commande</th>
+                                        <th>Date</th>
+                                        <th>La commande est-elle arrivée ?</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $result = mysqli_query($conn, "SELECT * FROM treforme JOIN tcaracteristiquesproduits ON treforme.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN ttypeproduits ON tcaracteristiquesproduits.ttypeproduitsFK = ttypeproduits.ttypeproduitsPK JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK JOIN ttechnicien ON treforme.ttechnicienFK = ttechnicien.ttechnicienPK");
+                                    $result = mysqli_query($conn, "SELECT * FROM tcommandes ORDER BY dateCommande DESC");
                                     while ($row = mysqli_fetch_array($result)) {
                                     ?>
-                                        <tr treformePK="<?php echo $row["treformePK"]; ?>">
-                                            <td><?php echo $row["nomFabricant"]; ?></td>
-                                            <td><?php echo $row["nomModele"]; ?></td>
-                                            <td><?php echo $row["prenomTechnicien"]; ?>&nbsp;<?php echo $row["nomTechnicien"]; ?></td>
-                                            <td><?php echo $row["dateReforme"]; ?></td>
-                                            <td><?php echo $row["numeroSerie"]; ?></td>
-                                            <td><?php echo $row["etatFonctionnement"]; ?></td>
+                                        <tr tcommandesPK="<?php echo $row["tcommandesPK"]; ?>">
+                                            <td><?php echo $row["numeroCommande"]; ?></td>
+                                            <td><?php echo $row["dateCommande"]; ?></td>
+                                            <td><?php if ($row["arrivee"] == 1) { ?>
+                                                    Oui
+                                                <?php } else if ($row["arrivee"] == 0) { ?>
+                                                    Non
+                                                <?php } ?>
+                                            </td>
+
                                             <td>
-                                                <button class="update btn btn-primary" data-target="#myModalReformeUpdate" data-toggle="modal" data-id="<?php echo $row["treformePK"]; ?>" data-id-caracteristiques="<?php echo $row["tcaracteristiquesproduitsFK"]; ?>" data-date="<?php echo $row["dateReforme"]; ?>" data-fonctionnement="<?php echo $row["etatFonctionnement"]; ?>" data-id-technicien="<?php echo $row["ttechnicienFK"]; ?>" data-numero="<?php echo $row["numeroSerie"]; ?>">
-                                                    <i class="fas fa-pen"></i>
+                                                <?php if ($row["arrivee"] == 1) { ?>
+                                                    <button class="view btn btn-success" data-target="#myModalCommandeView" data-toggle="modal" data-id="<?php echo $row["tcommandesPK"]; ?>" data-numero="<?php echo $row["numeroCommande"]; ?>">
+                                                        <i class="far fa-eye"></i>
+                                                    </button>&nbsp;
+                                                <?php } ?>
+                                                <button class="update btn btn-primary" data-target="#myModalCommandeUpdate" data-toggle="modal" data-id="<?php echo $row["tcommandesPK"]; ?>" data-numero="<?php echo $row["numeroCommande"]; ?>" data-date="<?php echo $row["dateCommande"]; ?>" data-arrivee="<?php echo $row["arrivee"]; ?>">
+                                                    <i class=" fas fa-pen"></i>
                                                 </button>&nbsp;
-                                                <button class="delete btn btn-danger" data-target="#myModalReformeDelete" data-toggle="modal" data-id="<?php echo $row["treformePK"]; ?>">
+                                                <button class="delete btn btn-danger" data-target="#myModalCommandeDelete" data-toggle="modal" data-id="<?php echo $row["tcommandesPK"]; ?>">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </td>
@@ -289,6 +310,7 @@ if (!isset($_SESSION["username"])) {
                 </div>
                 <!-- /.row -->
 
+
             </div>
             <!-- /.container-fluid -->
 
@@ -296,64 +318,36 @@ if (!isset($_SESSION["username"])) {
         <!-- /#page-wrapper -->
 
     </div>
-
     <!-- /#wrapper -->
 
-    <!-- The Modal libellé Add-->
-    <div class="modal fade" id="myModalReformeAdd">
+    <!-- The Modal Commande Add-->
+    <div class="modal fade" id="myModalCommandeAdd">
         <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Ajouter un produit à la réforme</h4>
+                    <h4 class="modal-title">Ajouter une commande</h4>
                 </div>
                 <!-- Modal body -->
                 <div class="modal-body">
                     <div id="doubleU" style="display: none;"></div>
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                            <form id="reforme_form">
+                            <form id="commande_form">
                                 <tr>
-                                    <th>Produit</th>
+                                    <th>Numéro de commande</th>
+                                    <td><input class="form-control" id="numeroCommande_a" name="numeroCommande_a" size="40px" value="" required><b></b></td>
+                                </tr>
+                                <tr>
+                                    <th>Date de commande</th>
+                                    <td><input type="date" class="form-control" id="dateCommande_a" name="dateCommande_a" value="" required><b></b></td>
+                                </tr>
+                                <tr>
+                                    <th>La commande est-elle déjà arrivée ?</th>
                                     <td>
-                                        <select class="form-control" id="tcaracteristiquesproduitsFK_a" name="tcaracteristiquesproduitsFK_a" value="" required>
-                                            <?php
-                                            $result = mysqli_query($conn, "SELECT * FROM tcaracteristiquesproduits JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK ORDER BY nomFabricant, nomModele");
-                                            while ($row = mysqli_fetch_array($result)) {
-                                            ?>
-                                                <option value="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>"><?php echo $row["nomFabricant"]; ?>&nbsp;<?php echo $row["nomModele"]; ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Numéro de série</th>
-                                    <td><input class="form-control" id="numeroSerie_a" name="numeroSerie_a" size="40px" value=""><b></b></td>
-                                </tr>
-                                <tr>
-                                    <th>Date de réforme</th>
-                                    <td><input class="form-control" id="dateReforme_a" name="dateReforme_a" size="40px" value="" type="date" required><b></b></td>
-                                </tr>
-                                <tr>
-                                    <th>État de fonctionnement</th>
-                                    <td><input class="form-control" id="etatFonctionnement_a" name="etatFonctionnement_a" size="40px" value="" type="text"><b></b></td>
-                                </tr>
-                                <tr>
-                                    <th>Technicien</th>
-                                    <td>
-                                        <select class="form-control" id="ttechnicienFK_a" name="ttechnicienFK_a" value="" required>
-                                            <?php
-                                            $result = mysqli_query($conn, "SELECT * FROM ttechnicien");
-                                            while ($row = mysqli_fetch_array($result)) {
-                                            ?>
-                                                <option value="<?php echo $row["ttechnicienPK"]; ?>"><?php echo $row["prenomTechnicien"]; ?>&nbsp;<?php echo $row["nomTechnicien"]; ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </select>
+                                        <input type="radio" id="arrivee_a" name="arrivee_a" value="1" checked>&nbsp;Oui
+                                        <input type="radio" id="arrivee_a" name="arrivee_a" value="0">&nbsp;Non
                                     </td>
                                 </tr>
                             </form>
@@ -372,70 +366,74 @@ if (!isset($_SESSION["username"])) {
         </div>
     </div>
 
-    <!-- The Modal libellé Update-->
-    <div class="modal fade" id="myModalReformeUpdate">
+    <!-- The Modal commande view-->
+    <div class="modal fade" id="myModalCommandeView">
         <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Modifier un produit envoyé à la réforme</h4>
+                    <h4 class="modal-title" id="afficherViewNumeroCommande"></h4>
                 </div>
                 <!-- Modal body -->
                 <div class="modal-body">
                     <div id="doubleU" style="display: none;"></div>
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                            <form id="update_form">
+                            <thead>
                                 <tr>
-                                    <th>Produit</th>
-                                    <td>
-                                        <select class="form-control" id="tcaracteristiquesproduitsFK_u" name="tcaracteristiquesproduitsFK_u" value="" required>
-                                            <?php
-                                            $result = mysqli_query($conn, "SELECT * FROM tcaracteristiquesproduits JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK");
-                                            while ($row = mysqli_fetch_array($result)) {
-                                            ?>
-                                                <option value="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>"><?php echo $row["nomFabricant"]; ?>&nbsp;<?php echo $row["nomModele"]; ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Numéro de série</th>
-                                    <td><input class="form-control" id="numeroSerie_u" name="numeroSerie_u" size="40px" value=""><b></b></td>
-                                </tr>
-                                <tr>
-                                    <th>Date de réforme</th>
-                                    <td><input class="form-control" id="dateReforme_u" name="dateReforme_u" size="40px" value="" type="date" required><b></b></td>
-                                </tr>
-                                <tr>
-                                    <th>État de fonctionnement</th>
-                                    <td><input class="form-control" id="etatFonctionnement_u" name="etatFonctionnement_u" size="40px" value="" type="text"><b></b></td>
-                                </tr>
-                                <tr>
+                                    <th>Fabricant</th>
+                                    <th>Nom des produits</th>
+                                    <th>Code produit</th>
+                                    <th>Quantité</th>
                                     <th>Technicien</th>
-                                    <td>
-                                        <select class="form-control" id="ttechnicienFK_u" name="ttechnicienFK_u" value="" required>
-                                            <?php
-                                            $result = mysqli_query($conn, "SELECT * FROM ttechnicien");
-                                            while ($row = mysqli_fetch_array($result)) {
-                                            ?>
-                                                <option value="<?php echo $row["ttechnicienPK"]; ?>"><?php echo $row["prenomTechnicien"]; ?>&nbsp;<?php echo $row["nomTechnicien"]; ?></option>
-                                            <?php
-                                            }
-                                            ?>
-                                        </select>
-                                    </td>
                                 </tr>
-                            </form>
+                            </thead>
+                            <tbody id="produitsCommandeList">
+                            </tbody>
                         </table>
+                    </div>
+                    <small>Pour ajouter des nouveaux produits à cette commande, rendez-vous à la page <a href="Stocks.php">stocks</a>.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal libellé Update-->
+    <div class="modal fade" id="myModalCommandeUpdate">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="afficherUpdateNumeroCommande"></h4>
+                </div>
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <div id="doubleU" style="display: none;"></div>
+                    <div class="table-responsive">
+                        <form id="update_form">
+                            <tr>
+                                <th>Numéro de commande</th>
+                                <td><input class="form-control" id="numeroCommande_u" name="numeroCommande_u" size="40px" value="" required><b></b></td>
+                            </tr>
+                            <tr>
+                                <th>Date de commande</th>
+                                <td><input type="date" class="form-control" id="dateCommande_u" name="dateCommande_u" value="" required><b></b></td>
+                            </tr>
+                            <tr>
+                                <th>La commande est-elle déjà arrivée ?</th>
+                                <td>
+                                    <input type="radio" id="arrivee_u" name="arrivee_u" value="1">&nbsp;Oui
+                                    <input type="radio" id="arrivee_u" name="arrivee_u" value="0">&nbsp;Non
+                                </td>
+                            </tr>
+                        </form>
                     </div>
                 </div>
                 <!-- Modal footer -->
                 <div class="modal-footer">
-                    <input type="hidden" id="treformePK_u" name="treformePK_u" name="type">
+                    <input type="hidden" id="tcommandesPK_u" name="tcommandesPK_u" name="type">
                     <button type="submit" class="btn btn-primary" id="update">
                         <span class="fas fa-pen"></span> Modifier
                     </button>
@@ -445,19 +443,19 @@ if (!isset($_SESSION["username"])) {
         </div>
     </div>
 
-    <!-- The Modal libellé Delete-->
-    <div class="modal fade" id="myModalReformeDelete">
+    <!-- The Modal Commande Delete-->
+    <div class="modal fade" id="myModalCommandeDelete">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form>
                     <!-- Modal Header -->
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Supprimer un produit envoyé à la réforme</h4>
+                        <h4 class="modal-title">Supprimer une commande</h4>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" id="treformePK_d" name="treformePK_d" class="form-control">
-                        <p>Êtes-vous sûr de vouloir supprimer ce produit ?</p>
+                        <input type="hidden" id="tcommandesPK_d" name="tcommandesPK_d" class="form-control">
+                        <p>Êtes-vous sûr de vouloir supprimer cette commande ?</p>
                         <p class="text-warning"><small>Cette action ne peut pas être annulée.</small></p>
                     </div>
                     <!-- Modal footer -->
