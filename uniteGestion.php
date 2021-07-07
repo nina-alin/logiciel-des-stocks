@@ -16,7 +16,7 @@ if (!isset($_SESSION["username"])) {
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
+    <meta name="description" content="Page des unités de gestion">
     <meta name="author" content="Nina Alin">
 
     <title>Logiciel des stocks</title>
@@ -44,42 +44,20 @@ if (!isset($_SESSION["username"])) {
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
-			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-		<![endif]-->
+                <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+                <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+            <![endif]-->
     <script>
-        // GET
-        $(document).on('click', '.view', function(e) {
-            var tfabricantsPK = $(this).attr("data-id");
-            var nomFabricant = $(this).attr("data-nom");
-            document.getElementById("afficherNomFabricant").innerHTML = "Liste des produits du fabricant " + nomFabricant;
-            $.ajax({
-                url: "php/saveFabricants.php",
-                method: "GET",
-                data: {
-                    type: 4,
-                    tfabricantsPK: tfabricantsPK
-                },
-                success: function(dataResult) {
-                    $('#fabricants_details').html(dataResult);
-                    $('#myModalFabricantsView').modal('show');
-                },
-                error: function(request, status, error) {
-                    alert(request.responseText);
-                }
-            });
-        });
-
         // POST
         $(document).on('click', '#btn-add', function(e) {
-            var data = $("#fabricants_form").serialize();
+            var data = $("#tunitegestion_form").serialize();
             $.ajax({
                 data: {
                     type: 1,
-                    nomFabricant: $("#nomFabricant").val(),
+                    nomUniteGestion: $("#nomUniteGestion").val(),
                 },
                 type: "post",
-                url: "php/saveFabricants.php",
+                url: "php/saveUniteGestion.php",
                 success: function(dataResult) {
                     try {
                         var dataResult = JSON.parse(dataResult);
@@ -91,7 +69,7 @@ if (!isset($_SESSION["username"])) {
                         }
                     }
                     if (dataResult.statusCode == 200) {
-                        $('#myModalFabricantsAdd').modal('hide');
+                        $('#myModalUniteGestionAdd').modal('hide');
                         alert('Données ajoutées avec succès !');
                         location.reload();
                     } else if (dataResult.statusCode == 201) {
@@ -106,10 +84,10 @@ if (!isset($_SESSION["username"])) {
 
         // UPDATE
         $(document).on('click', '.update', function(e) {
-            var tfabricantsPK = $(this).attr("data-id");
-            var nomFabricant = $(this).attr("data-nom");
-            $('#tfabricantsPK_u').val(tfabricantsPK);
-            $('#nomFabricant_u').val(nomFabricant);
+            var tunitegestionPK = $(this).attr("data-id");
+            var nomUniteGestion = $(this).attr("data-nom");
+            $('#tunitegestionPK_u').val(tunitegestionPK);
+            $('#nomUniteGestion_u').val(nomUniteGestion);
         });
 
         $(document).on('click', '#update', function(e) {
@@ -117,11 +95,11 @@ if (!isset($_SESSION["username"])) {
             $.ajax({
                 data: {
                     type: 2,
-                    tfabricantsPK: $("#tfabricantsPK_u").val(),
-                    nomFabricant: $("#nomFabricant_u").val()
+                    tunitegestionPK: $('#tunitegestionPK_u').val(),
+                    nomUniteGestion: $("#nomUniteGestion_u").val(),
                 },
                 type: "post",
-                url: "php/saveFabricants.php",
+                url: "php/saveUniteGestion.php",
                 success: function(dataResult) {
                     try {
                         var dataResult = JSON.parse(dataResult);
@@ -133,7 +111,7 @@ if (!isset($_SESSION["username"])) {
                         }
                     }
                     if (dataResult.statusCode == 200) {
-                        $('#myModalFabricantsUpdate').modal('hide');
+                        $('#myModalUniteGestionUpdate').modal('hide');
                         alert('Données correctement modifiées !');
                         location.reload();
                     } else if (dataResult.statusCode == 201) {
@@ -148,21 +126,21 @@ if (!isset($_SESSION["username"])) {
 
         // DELETE
         $(document).on("click", ".delete", function() {
-            var tfabricantsPK = $(this).attr("data-id");
-            $('#tfabricantsPK_d').val(tfabricantsPK);
+            var tunitegestionPK = $(this).attr("data-id");
+            $('#tunitegestionPK_d').val(tunitegestionPK);
         });
 
         $(document).on("click", "#delete", function() {
             $.ajax({
-                url: "php/saveFabricants.php",
+                url: "php/saveUniteGestion.php",
                 type: "POST",
                 cache: false,
                 data: {
                     type: 3,
-                    tfabricantsPK: $("#tfabricantsPK_d").val()
+                    tunitegestionPK: $("#tunitegestionPK_d").val()
                 },
                 success: function(dataResult) {
-                    $('#myModalFabricantsDelete').modal('hide');
+                    $('#myModalUniteGestionDelete').modal('hide');
                     $("#" + dataResult).remove();
                     alert('Données correctement supprimées !');
                     document.location.reload();
@@ -173,8 +151,6 @@ if (!isset($_SESSION["username"])) {
             });
         });
     </script>
-
-
 </head>
 
 <body>
@@ -202,11 +178,11 @@ if (!isset($_SESSION["username"])) {
                         <li><a href="/stocks/caracteristiquesProduits.php"><i class="fas fa-microchip"></i>&nbsp;Modèles de produits</a></li>
                         <li> <a href="/stocks/techniciens.php"><i class="fas fa-wrench"></i>&nbsp;Techniciens</a></li>
                         <li> <a href="/stocks/lieuStockage.php"><i class="fas fa-box-open"></i>&nbsp;Lieux de stockage</a></li>
-                        <li class="active"><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
+                        <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
                         <li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
                         <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
                         <li><a href="/stocks/emplacements.php"><i class="fas fa-warehouse"></i>&nbsp;Emplacements</a></li>
-                        <li><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
+                        <li class="active"><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
                         <li class="divider"></li>
                         <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
                     </ul>
@@ -251,18 +227,14 @@ if (!isset($_SESSION["username"])) {
 
                 <!-- Page Heading -->
                 <div class="row">
-                    <div class="col-lg-8">
+                    <div class="col-lg-11">
                         <h1 class="page-header text-primary">
-                            Fabricants
+                            Unités de gestion
                         </h1>
                     </div>
-                    <div class="col-lg-3">
-                        <br /><br /><br />
-                        <i class="fas fa-search"></i>&nbsp;&nbsp;<input type="text" id="myInput" onkeyup="searchFunction()" placeholder="Rechercher..">
-                    </div>
-                    <br /><br /><br />
+                    <br /><br />
                     <div class="col-1">
-                        <button class="btn btn-warning" data-target="#myModalFabricantsAdd" data-toggle="modal">
+                        <button class="btn btn-warning" data-target="#myModalUniteGestionAdd" data-toggle="modal">
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
@@ -272,7 +244,7 @@ if (!isset($_SESSION["username"])) {
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="table-responsive">
-                            <table class="table table-hover" id="myTable">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Nom</th>
@@ -281,19 +253,16 @@ if (!isset($_SESSION["username"])) {
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $result = mysqli_query($conn, "SELECT * FROM tfabricants ORDER BY nomFabricant");
+                                    $result = mysqli_query($conn, "SELECT * FROM tunitegestion ORDER BY nomUniteGestion");
                                     while ($row = mysqli_fetch_array($result)) {
                                     ?>
-                                        <tr tlibellesPK="<?php echo $row["tfabricantsPK"]; ?>">
-                                            <td><?php echo $row["nomFabricant"]; ?></td>
+                                        <tr tunitegestionPK="<?php echo $row["tunitegestionPK"]; ?>">
+                                            <td><?php echo $row["nomUniteGestion"]; ?></td>
                                             <td>
-                                                <button class="view btn btn-success" data-target="#myModalFabricantsView" data-toggle="modal" data-id="<?php echo $row["tfabricantsPK"]; ?>" data-nom="<?php echo $row["nomFabricant"]; ?>">
-                                                    <i class="far fa-eye"></i>
-                                                </button>&nbsp;
-                                                <button class="update btn btn-primary" data-target="#myModalFabricantsUpdate" data-toggle="modal" data-id="<?php echo $row["tfabricantsPK"]; ?>" data-nom="<?php echo $row["nomFabricant"]; ?>">
+                                                <button class="update btn btn-primary" data-target="#myModalUniteGestionUpdate" data-toggle="modal" data-id="<?php echo $row["tunitegestionPK"]; ?>" data-nom="<?php echo $row["nomUniteGestion"]; ?>">
                                                     <i class="fas fa-pen"></i>
                                                 </button>&nbsp;
-                                                <button class="delete btn btn-danger" data-target="#myModalFabricantsDelete" data-toggle="modal" data-id="<?php echo $row["tfabricantsPK"]; ?>">
+                                                <button class="delete btn btn-danger" data-target="#myModalUniteGestionDelete" data-toggle="modal" data-id="<?php echo $row["tunitegestionPK"]; ?>">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </td>
@@ -318,25 +287,25 @@ if (!isset($_SESSION["username"])) {
     </div>
     <!-- /#wrapper -->
 
-    <!-- The Modal Fabricants Add-->
-    <div class="modal fade" id="myModalFabricantsAdd">
+    <!-- The Modal Type Produit Add-->
+    <div class="modal fade" id="myModalUniteGestionAdd">
         <div class="modal-dialog">
             <div class="modal-content">
                 <!-- Modal Header -->
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Ajouter un fabricant</h4>
+                    <h4 class="modal-title">Ajouter une unité de gestion</h4>
                 </div>
                 <!-- Modal body -->
                 <div class="modal-body">
                     <div id="doubleU" style="display: none;"></div>
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                            <form id="fabricants_form">
+                            <form id="tunitegestion_form">
                                 <tr>
                                     <th>Nom</th>
                                     <td>
-                                        <input class="form-control" id="nomFabricant" name="nomFabricant" size="40px" value="" required><b></b>
+                                        <input class="form-control" id="nomUniteGestion" name="nomUniteGestion" size="40px" value="" required><b></b>
                                     </td>
                                 </tr>
                             </form>
@@ -353,57 +322,25 @@ if (!isset($_SESSION["username"])) {
         </div>
     </div>
 
-    <!-- The Modal Fabricant view-->
-    <div class="modal fade" id="myModalFabricantsView">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- Modal Header -->
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title" id="afficherNomFabricant"></h4>
-                </div>
-                <!-- Modal body -->
-                <div class="modal-body">
-                    <div id="doubleU" style="display: none;"></div>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Modèle</th>
-                                    <th>Type de produit</th>
-                                    <th>Quantité</th>
-                                    <th>Emplacement</th>
-                                </tr>
-                            </thead>
-                            <tbody id="fabricants_details">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- The Modal Fabricant Update-->
-    <div class="modal fade" id="myModalFabricantsUpdate">
+    <!-- The Modal Unite Gestion Update-->
+    <div class="modal fade" id="myModalUniteGestionUpdate">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form id="update_form">
                     <!-- Modal Header -->
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Modifier un fabricant</h4>
+                        <h4 class="modal-title">Modifier une unité de gestion</h4>
                     </div>
                     <!-- Modal body -->
                     <div class="modal-body">
                         <div id="doubleU" style="display: none;"></div>
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                                <input type="hidden" id="tfabricantsPK_u" name="tfabricantsPK" class="form-control" required>
                                 <tr>
                                     <th>Nom</th>
                                     <td>
-                                        <input type="text" id="nomFabricant_u" name="nom" class="form-control" value="<?php echo '$nomFabricant'; ?>" required>
+                                        <input class="form-control" id="nomUniteGestion_u" name="nomUniteGestion_u" size="40px" value="" required><b></b>
                                     </td>
                                 </tr>
                             </table>
@@ -411,62 +348,39 @@ if (!isset($_SESSION["username"])) {
                     </div>
                     <!-- Modal footer -->
                     <div class="modal-footer">
+                        <input type="hidden" id="tunitegestionPK_u" name="tunitegestionPK_u" name="type">
                         <button type="button" class="btn btn-primary" id="update">Modifier</button>
-                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler
-                        ">
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- The Modal Type Produit Delete-->
-    <div class="modal fade" id="myModalFabricantsDelete">
+    <!-- The Modal Unite Gestion Delete-->
+    <div class="modal fade" id="myModalUniteGestionDelete">
         <div class="modal-dialog">
             <div class="modal-content">
                 <form>
                     <!-- Modal Header -->
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h4 class="modal-title">Supprimer un fabricant</h4>
+                        <h4 class="modal-title">Supprimer une unité de gestion</h4>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" id="tfabricantsPK_d" name="tfabricantsPK" class="form-control">
-                        <p>Êtes-vous sûr de vouloir supprimer ce fabricant ?</p>
+                        <input type="hidden" id="tunitegestionPK_d" name="tunitegestionPK_d" class="form-control">
+                        <p>Êtes-vous sûr de vouloir supprimer cette unité de gestion ?</p>
                         <p class="text-warning"><small>Cette action ne peut pas être annulée.</small></p>
                     </div>
                     <!-- Modal footer -->
                     <div class="modal-footer">
                         <button type="button" class="btn btn-danger" id="delete">Supprimer</button>
-                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-    <script>
-        /* When the user clicks on the button, 
-toggle between hiding and showing the dropdown content */
-        function myFunction() {
-            document.getElementById("myDropdown").classList.toggle("show");
-        }
-
-        // Close the dropdown if the user clicks outside of it
-        window.onclick = function(event) {
-            if (!event.target.matches('.dropbtn')) {
-                var dropdowns = document.getElementsByClassName("dropdown-content");
-                var i;
-                for (i = 0; i < dropdowns.length; i++) {
-                    var openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
-                }
-            }
-        }
-    </script>
-
     <!-- jQuery Version 1.11.0 -->
     <script src="js/jquery-1.11.0.js"></script>
 

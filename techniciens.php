@@ -89,9 +89,9 @@ if (!isset($_SESSION["username"])) {
                         var dataResult = JSON.parse(dataResult);
                     } catch (e) {
                         if (e instanceof SyntaxError) {
-                            alert("Erreur lors de la requête !", true);
+                            alert("Erreur lors de la requête : " + dataResult, true);
                         } else {
-                            alert("Erreur lors de la requête !", false);
+                            alert("Erreur lors de la requête : " + dataResult, false);
                         }
                     }
                     if (dataResult.statusCode == 200) {
@@ -124,7 +124,6 @@ if (!isset($_SESSION["username"])) {
 
         $(document).on('click', '#update', function(e) {
             var data = $("#update_form").serialize();
-            console.log($('input[name="toujoursService_u"]:checked').val());
             $.ajax({
                 data: {
                     type: 2,
@@ -141,9 +140,9 @@ if (!isset($_SESSION["username"])) {
                         var dataResult = JSON.parse(dataResult);
                     } catch (e) {
                         if (e instanceof SyntaxError) {
-                            alert("Erreur lors de la requête !", true);
+                            alert("Erreur lors de la requête : " + dataResult, true);
                         } else {
-                            alert("Erreur lors de la requête !", false);
+                            alert("Erreur lors de la requête : " + dataResult, false);
                         }
                     }
                     if (dataResult.statusCode == 200) {
@@ -217,6 +216,8 @@ if (!isset($_SESSION["username"])) {
                         <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
                         <li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
                         <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+                        <li><a href="/stocks/emplacements.php"><i class="fas fa-warehouse"></i>&nbsp;Emplacements</a></li>
+                        <li><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
                         <li class="divider"></li>
                         <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
                     </ul>
@@ -226,7 +227,18 @@ if (!isset($_SESSION["username"])) {
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="dashboard.php">Dashboard</a>
+                        <a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+                                <?php
+                                $result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
+                                $i = 0;
+                                while ($row = mysqli_fetch_array($result)) {
+                                    $i++;
+                                }
+                                echo $i;
+
+                                ?>
+                            </span>
+                        </a>
                     </li>
                     <li>
                         <a href="stocks.php">Stocks</a>
@@ -447,8 +459,8 @@ if (!isset($_SESSION["username"])) {
                                     <tr>
                                         <th>Est-il toujours dans le service ?</th>
                                         <td>
-                                            <input type="radio" id="toujoursService_u" name="toujoursService_u" value="1">&nbsp;Oui
-                                            <input type="radio" id="toujoursService_u" name="toujoursService_u" value="0">&nbsp;Non
+                                            <input type="radio" id="toujoursService_u_oui" name="toujoursService_u" value="1">&nbsp;Oui
+                                            <input type="radio" id="toujoursService_u_non" name="toujoursService_u" value="0">&nbsp;Non
                                         </td>
                                     </tr>
                                 </form>
@@ -518,6 +530,9 @@ toggle between hiding and showing the dropdown content */
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Rechercher -->
+    <script src="js/search.js"></script>
 </body>
 
 </html>

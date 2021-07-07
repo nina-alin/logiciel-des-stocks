@@ -62,9 +62,7 @@ if (!isset($_SESSION["username"])) {
                 ttypeproduitsPK: ttypeproduitsPK
             },
             url: "php/saveTypeProduits.php",
-            success: function(resultat) {
-                console.log(resultat);
-            },
+            success: function(resultat) {},
             error: function(request, status, error) {
                 alert(request.responseText);
             },
@@ -79,7 +77,6 @@ if (!isset($_SESSION["username"])) {
             data: {
                 nomModele: $("#nomModele_a").val(),
                 compatibilite: $("#compatibilite_a").val(),
-                codeProduit: $("#codeProduit_a").val(),
                 ttypeproduitsFK: $("#ttypeproduitsFK_a").val(),
                 tfabricantsFK: $("#tfabricantsFK_a").val(),
                 tlibellesFK: $("#tlibellesFK_a").val(),
@@ -92,9 +89,9 @@ if (!isset($_SESSION["username"])) {
                     var dataResult = JSON.parse(dataResult);
                 } catch (e) {
                     if (e instanceof SyntaxError) {
-                        alert("Erreur lors de la requête !", true);
+                        alert("Erreur lors de la requête : " + dataResult, true);
                     } else {
-                        alert("Erreur lors de la requête !", false);
+                        alert("Erreur lors de la requête : " + dataResult, false);
                     }
                 }
                 if (dataResult.statusCode == 200) {
@@ -117,7 +114,6 @@ if (!isset($_SESSION["username"])) {
         var tfabricantsFK = $(this).attr("data-id-fabricant");
         var ttypeproduitsFK = $(this).attr("data-id-typeproduit");
         var compatibilite = $(this).attr("data-compatibilite");
-        var codeProduit = $(this).attr("data-codeProduit");
         var nomModele = $(this).attr("data-nom-modele");
 
         var nomFabricant = $(this).attr("data-nom-fabricant");
@@ -130,13 +126,10 @@ if (!isset($_SESSION["username"])) {
         $('#nomModele_u').val(nomModele);
         $('#ttypeproduitsFK_u').val(ttypeproduitsFK);
         $('#compatibilite_u').val(compatibilite);
-        $('#codeProduit_u').val(codeProduit);
     });
 
     $(document).on('click', '#update', function(e) {
         var data = $("#update_form").serialize();
-        console.log(data);
-        alert("stop");
         $.ajax({
             data: {
                 type: 2,
@@ -145,7 +138,6 @@ if (!isset($_SESSION["username"])) {
                 nomModele: $("#nomModele_u").val(),
                 ttypeproduitsFK: $("#ttypeproduitsFK_u").val(),
                 compatibilite: $("#compatibilite_u").val(),
-                codeProduit: $("#codeProduit_u").val()
             },
             type: "post",
             url: "php/saveCaracteristiquesProduits.php",
@@ -154,9 +146,9 @@ if (!isset($_SESSION["username"])) {
                     var dataResult = JSON.parse(dataResult);
                 } catch (e) {
                     if (e instanceof SyntaxError) {
-                        alert("Erreur lors de la requête !", true);
+                        alert(dataResult, true);
                     } else {
-                        alert("Erreur lors de la requête !", false);
+                        alert(dataResult, false);
                     }
                 }
                 if (dataResult.statusCode == 200) {
@@ -175,21 +167,21 @@ if (!isset($_SESSION["username"])) {
 
     // DELETE
     $(document).on("click", ".delete", function() {
-        var ttypeproduitsPK = $(this).attr("data-id");
-        $('#ttypeproduitsPK_d').val(ttypeproduitsPK);
+        var tcaracteristiquesproduitsPK = $(this).attr("data-id");
+        $('#tcaracteristiquesproduitsPK_d').val(tcaracteristiquesproduitsPK);
     });
 
     $(document).on("click", "#delete", function() {
         $.ajax({
-            url: "php/saveTypeProduits.php",
+            url: "php/saveCaracteristiquesProduits.php",
             type: "POST",
             cache: false,
             data: {
                 type: 3,
-                ttypeproduitsPK: $("#ttypeproduitsPK_d").val()
+                tcaracteristiquesproduitsPK: $("#tcaracteristiquesproduitsPK_d").val()
             },
             success: function(dataResult) {
-                $('#myModalTypeProduitDelete').modal('hide');
+                $('#myModalCaracteristiquesProduitsDelete').modal('hide');
                 $("#" + dataResult).remove();
                 alert('Données correctement supprimées !');
                 location.reload();
@@ -229,6 +221,8 @@ if (!isset($_SESSION["username"])) {
                         <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
                         <li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
                         <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+                        <li><a href="/stocks/emplacements.php"><i class="fas fa-warehouse"></i>&nbsp;Emplacements</a></li>
+                        <li><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
                         <li class="divider"></li>
                         <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
                     </ul>
@@ -238,7 +232,17 @@ if (!isset($_SESSION["username"])) {
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="dashboard.php">Dashboard</a>
+                        <a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+                                <?php
+                                $result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
+                                $i = 0;
+                                while ($row = mysqli_fetch_array($result)) {
+                                    $i++;
+                                }
+                                echo $i;
+                                ?>
+                            </span>
+                        </a>
                     </li>
                     <li>
                         <a href="stocks.php">Stocks</a>
@@ -262,12 +266,16 @@ if (!isset($_SESSION["username"])) {
 
                 <!-- Page Heading -->
                 <div class="row">
-                    <div class="col-lg-11">
+                    <div class="col-lg-8">
                         <h1 class="page-header text-primary">
                             Modèles des produits
                         </h1>
                     </div>
-                    <br /><br />
+                    <div class="col-lg-3">
+                        <br /><br /><br />
+                        <i class="fas fa-search"></i>&nbsp;&nbsp;<input type="text" id="myInput" onkeyup="searchFunction()" placeholder="Rechercher..">
+                    </div>
+                    <br /><br /><br />
                     <div class="col-1">
                         <button class="btn btn-warning" data-target="#myModalCaracteristiqueProduitAdd" data-toggle="modal">
                             <i class="fas fa-plus"></i>
@@ -279,14 +287,11 @@ if (!isset($_SESSION["username"])) {
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="table-responsive">
-                            <table class="table table-hover">
+                            <table class="table table-hover" id="myTable">
                                 <thead>
                                     <tr>
-                                        <th>Fabricant</th>
-                                        <th>Nom</th>
                                         <th>Désignation</th>
-                                        <th>Compatibilité</th>
-                                        <th>Code produit</th>
+                                        <th>Type de produit</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -296,19 +301,16 @@ if (!isset($_SESSION["username"])) {
                                     while ($row = mysqli_fetch_array($result)) {
                                     ?>
                                         <tr ttcaracteristiquesproduitsPK="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>">
-                                            <td><?php echo $row["nomFabricant"]; ?></td>
-                                            <td><?php echo $row["nomModele"]; ?></td>
+                                            <td><?php echo $row["nomFabricant"]; ?>&nbsp;<?php echo $row["nomModele"]; ?></td>
                                             <td><?php echo $row["nomTypeProduit"]; ?></td>
-                                            <td><?php echo $row["compatibilite"]; ?></td>
-                                            <td><?php echo $row["codeProduit"]; ?></td>
                                             <td>
                                                 <button class="view btn btn-success" data-target="#myModalMarquesView" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>" data-nom-fabricant="<?php echo $row["nomFabricant"]; ?>">
                                                     <i class="far fa-eye"></i>
                                                 </button>&nbsp;
-                                                <button class="update btn btn-primary" data-target="#myModalCaracteristiquesProduitsUpdate" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>" data-id-fabricant="<?php echo $row["tfabricantsFK"]; ?>" data-nom-fabricant="<?php echo $row["nomFabricant"]; ?>" data-nom-modele="<?php echo $row["nomModele"]; ?>" data-id-typeproduit="<?php echo $row["ttypeproduitsFK"]; ?>" data-compatibilite="<?php echo $row["compatibilite"]; ?>" data-codeProduit="<?php echo $row["codeProduit"]; ?>">
+                                                <button class="update btn btn-primary" data-target="#myModalCaracteristiquesProduitsUpdate" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>" data-id-fabricant="<?php echo $row["tfabricantsFK"]; ?>" data-nom-fabricant="<?php echo $row["nomFabricant"]; ?>" data-nom-modele="<?php echo $row["nomModele"]; ?>" data-id-typeproduit="<?php echo $row["ttypeproduitsFK"]; ?>" data-compatibilite="<?php echo $row["compatibilite"]; ?>">
                                                     <i class="fas fa-pen"></i>
                                                 </button>&nbsp;
-                                                <button class="delete btn btn-danger" data-target="#myModalMarquesDelete" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>">
+                                                <button class="delete btn btn-danger" data-target="#myModalCaracteristiquesProduitsDelete" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </td>
@@ -388,12 +390,6 @@ if (!isset($_SESSION["username"])) {
                                     <th>Compatibilite</th>
                                     <td>
                                         <input class="form-control" id="compatibilite_a" name="compatibilite_a" size="40px" value=""><b></b>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Code produit</th>
-                                    <td>
-                                        <input class="form-control" id="codeProduit_a" name="codeProduit_a" size="40px" value="" placeholder="Code barre du produit"><b></b>
                                     </td>
                                 </tr>
                                 <tr>
@@ -509,10 +505,6 @@ if (!isset($_SESSION["username"])) {
                                     <th>Compatibilité</th>
                                     <td><input class="form-control" id="compatibilite_u" name="compatibilite_u" size="40px" value="<?php echo '$compatibilite'; ?>" required><b></b></td>
                                 </tr>
-                                <tr>
-                                    <th>Code produit</th>
-                                    <td><input class="form-control" id="codeProduit_u" name="codeProduit_u" size="40px" value="<?php echo '$codeProduit'; ?>" required><b></b></td>
-                                </tr>
                             </table>
                         </div>
                     </div>
@@ -529,7 +521,7 @@ if (!isset($_SESSION["username"])) {
         </div>
 
         <!-- The Modal Type Produit Delete-->
-        <div class="modal fade" id="myModalTypeProduitDelete">
+        <div class="modal fade" id="myModalCaracteristiquesProduitsDelete">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <form>
@@ -580,6 +572,9 @@ toggle between hiding and showing the dropdown content */
 
         <!-- Bootstrap Core JavaScript -->
         <script src="js/bootstrap.min.js"></script>
+
+        <!-- Rechercher -->
+        <script src="js/search.js"></script>
 </body>
 
 </html>

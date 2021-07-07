@@ -2,47 +2,66 @@
 
 include 'connect.php';
 
+
 // POST
 if (count($_POST) > 0) {
+
     if ($_POST['type'] == 1) {
+
         $nomModele = $_POST['nomModele'];
         $compatibilite = $_POST['compatibilite'];
-        $codeProduit = $_POST['codeProduit'];
         $ttypeproduitsFK = $_POST['ttypeproduitsFK'];
         $tfabricantsFK = $_POST['tfabricantsFK'];
         $tlibellesFK = $_POST['tlibellesFK'];
-        $sql = "INSERT INTO `tcaracteristiquesproduits`(`nomModele`, `compatibilite`, `codeProduit`, `ttypeproduitsFK`, `tfabricantsFK`) VALUES ('$nomModele','$compatibilite','$codeProduit','$ttypeproduitsFK','$tfabricantsFK')";;
-        // il faudrait que ça crée également une entrée dans la table tproduitsstockes avec quantite = 0 pour éviter que l'utilisateur n'ait à le faire
-        if (mysqli_query($conn, $sql)) {
-            $tcaracteristiquesproduitsFK = mysqli_insert_id($conn);
-            $sql = "INSERT INTO `tproduitsstockes`(`tlibellesFK`, `tcaracteristiquesproduitsFK`,`alerte`) VALUES ('$tlibellesFK','$tcaracteristiquesproduitsFK',1)";
-            if (mysqli_query($conn, $sql)) {
 
+        // Encodage des guillemets / apostrophes
+        $nomModele = addslashes($nomModele);
+        $compatibilite = addslashes($compatibilite);
+
+        // on envoie la requête
+        $sql = "INSERT INTO `tcaracteristiquesproduits`(`nomModele`, `compatibilite`, `ttypeproduitsFK`, `tfabricantsFK`) VALUES ('$nomModele','$compatibilite','$ttypeproduitsFK','$tfabricantsFK')";;
+
+        if (mysqli_query($conn, $sql)) {
+
+            // on récupère l'id automatiquement créé par la dernière requête SQL
+            $tcaracteristiquesproduitsFK = mysqli_insert_id($conn);
+
+            // on insère dans la table tproduitsstockes une entrée avec quantite vide
+            $sql = "INSERT INTO `tproduitsstockes`(`tlibellesFK`, `tcaracteristiquesproduitsFK`,`alerte`) VALUES ('$tlibellesFK','$tcaracteristiquesproduitsFK',1)";
+
+            if (mysqli_query($conn, $sql)) {
                 echo json_encode(array("statusCode" => 200));
             } else {
-                echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+                echo mysqli_error($conn);
             }
             mysqli_close($conn);
         } else {
-            echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+            echo mysqli_error($conn);
         }
     }
 }
 
 // UPDATE
 if (count($_POST) > 0) {
+
     if ($_POST['type'] == 2) {
+
         $tcaracteristiquesproduitsPK = $_POST['tcaracteristiquesproduitsPK'];
         $tfabricantsFK = $_POST['tfabricantsFK'];
         $nomModele = $_POST['nomModele'];
         $ttypeproduitsFK = $_POST['ttypeproduitsFK'];
         $compatibilite = $_POST['compatibilite'];
-        $codeProduit = $_POST['codeProduit'];
-        $sql = "UPDATE `tcaracteristiquesproduits` SET `nomModele`='$nomModele',`compatibilite`='$compatibilite',`codeProduit`='$codeProduit',`ttypeproduitsFK`=$ttypeproduitsFK,`tfabricantsFK`=$tfabricantsFK WHERE `tcaracteristiquesproduitsPK`=$tcaracteristiquesproduitsPK;";
+
+        // Encodage des guillemets / apostrophes
+        $nomModele = addslashes($nomModele);
+        $compatibilite = addslashes($compatibilite);
+
+        $sql = "UPDATE `tcaracteristiquesproduits` SET `nomModele`='$nomModele',`compatibilite`='$compatibilite',`ttypeproduitsFK`=$ttypeproduitsFK,`tfabricantsFK`=$tfabricantsFK WHERE `tcaracteristiquesproduitsPK`=$tcaracteristiquesproduitsPK;";
+
         if (mysqli_query($conn, $sql)) {
             echo json_encode(array("statusCode" => 200));
         } else {
-            echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+            echo mysqli_error($conn);
         }
         mysqli_close($conn);
     }
@@ -50,41 +69,49 @@ if (count($_POST) > 0) {
 
 // DELETE
 if (count($_POST) > 0) {
+
     if ($_POST['type'] == 3) {
-        $tlibellesPK = $_POST['tlibellesPK'];
-        $sql = "DELETE FROM `tlibelles` WHERE tlibellesPK=$tlibellesPK";
+
+        $tcaracteristiquesproduitsPK = $_POST['tcaracteristiquesproduitsPK'];
+
+        $sql = "DELETE FROM `tcaracteristiquesproduits` WHERE tcaracteristiquesproduitsPK=$tcaracteristiquesproduitsPK";
+
         if (mysqli_query($conn, $sql)) {
-            echo $tlibellesPK;
+            echo $tcaracteristiquesproduitsPK;
         } else {
-            echo "Error: " . $sql . "<br>" . mysqli_error($conn);
+            echo mysqli_error($conn);
         }
         mysqli_close($conn);
     }
 }
 
+
 // GET
-if (count($_POST) > 0) {
-    if ($_POST['type'] == 4) {
-        $tlibellesPK = $_POST['tlibellesPK'];
-        $sql = "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK JOIN tproduits ON tproduits.tproduitsPK = tproduitsstockes.tproduitsFK JOIN tcaracteristiquesproduits ON tcaracteristiquesproduits.tcaracteristiquesproduitsPK = tproduits.tcaracteristiquesproduitsFK JOIN tmarques ON tcaracteristiquesproduits.tmarquesFK = tmarques.tmarquesPK WHERE tlibellesPK = $tlibellesPK";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute(); {
-            // CREATE POSTS ARRAY
-            $posts_array = [];
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $post_data = [
-                    'tproduitsstockesPK' => $row['tproduitsstockesPK'],
-                    'nomModele' => html_entity_decode($row['nomModele']),
-                    'nomMarque' => html_entity_decode($row['nomMarque']),
-                    'numeroSerie' => html_entity_decode($row['numeroSerie']),
-                    'compatibilite' => html_entity_decode($row['compatibilite']),
-                    'codeProduit' => html_entity_decode($row['codeProduit'])
-                ];
-                // PUSH POST DATA IN OUR $posts_array ARRAY
-                array_push($posts_array, $post_data);
+if (count($_GET) > 0) {
+
+    if ($_GET['type'] == 4) {
+
+        $tcaracteristiquesproduitsPK = $_GET['tcaracteristiquesproduitsPK'];
+
+        $sql = "SELECT * FROM tproduitsstockes JOIN tlibelles ON tproduitsstockes.tlibellesFK = tlibelles.tlibellesPK JOIN tcaracteristiquesproduits ON tcaracteristiquesproduits.tcaracteristiquesproduitsPK = tproduitsstockes.tcaracteristiquesproduitsFK JOIN ttypeproduits ON ttypeproduits.ttypeproduitsPK = tcaracteristiquesproduits.ttypeproduitsFK JOIN tfabricants ON tfabricants.tfabricantsPK = tcaracteristiquesproduits.tfabricantsFK WHERE tlibellesFK=$tcaracteristiquesproduitsPK ORDER BY nomFabricant, nomModele";
+
+        $result = mysqli_query($conn, $sql);
+        $output = '';
+
+        while ($row = mysqli_fetch_array($result)) {
+            if ($row["quantite"] < 4 && $row["quantite"] != null && $row["alerte"] == 1) { // si la quantité est trop basse, on affiche la ligne en rouge
+                $output .= '<tr style="background-color: #ffbdbd;">';
+            } else {
+                $output .= '<tr>';
             }
-            //SHOW POST/POSTS IN JSON FORMAT
-            echo json_encode($posts_array);
+            $output .= '
+                       <td>' . $row["nomFabricant"] . '</td>   
+                       <td>' . $row["nomModele"] . '</td>  
+                       <td>' . $row["nomTypeProduit"] . '</td>    
+                       <td>' . $row["quantite"] . '</td>  
+                  </tr> 
+             ';
         }
+        echo $output;
     }
 }

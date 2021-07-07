@@ -10,7 +10,7 @@ if (!isset($_SESSION["username"])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
     <meta charset="utf-8">
@@ -88,9 +88,9 @@ if (!isset($_SESSION["username"])) {
                     var dataResult = JSON.parse(dataResult);
                 } catch (e) {
                     if (e instanceof SyntaxError) {
-                        alert("Erreur lors de la requête !", true);
+                        alert("Erreur lors de la requête : " + dataResult, true);
                     } else {
-                        alert("Erreur lors de la requête !", false);
+                        alert("Erreur lors de la requête : " + dataResult, false);
                     }
                 }
                 if (dataResult.statusCode == 200) {
@@ -136,9 +136,9 @@ if (!isset($_SESSION["username"])) {
                     var dataResult = JSON.parse(dataResult);
                 } catch (e) {
                     if (e instanceof SyntaxError) {
-                        alert("Erreur lors de la requête !", true);
+                        alert("Erreur lors de la requête : " + dataResult, true);
                     } else {
-                        alert("Erreur lors de la requête !", false);
+                        alert("Erreur lors de la requête : " + dataResult, false);
                     }
                 }
                 if (dataResult.statusCode == 200) {
@@ -212,6 +212,8 @@ if (!isset($_SESSION["username"])) {
                         <li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
                         <li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
                         <li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+                        <li><a href="/stocks/emplacements.php"><i class="fas fa-warehouse"></i>&nbsp;Emplacements</a></li>
+                        <li><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
                         <li class="divider"></li>
                         <li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
                     </ul>
@@ -221,7 +223,18 @@ if (!isset($_SESSION["username"])) {
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="dashboard.php">Dashboard</a>
+                        <a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+                                <?php
+                                $result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
+                                $i = 0;
+                                while ($row = mysqli_fetch_array($result)) {
+                                    $i++;
+                                }
+                                echo $i;
+
+                                ?>
+                            </span>
+                        </a>
                     </li>
                     <li>
                         <a href="stocks.php">Stocks</a>
@@ -278,7 +291,9 @@ if (!isset($_SESSION["username"])) {
                                     ?>
                                         <tr tcommandesPK="<?php echo $row["tcommandesPK"]; ?>">
                                             <td><?php echo $row["numeroCommande"]; ?></td>
-                                            <td><?php echo $row["dateCommande"]; ?></td>
+                                            <td><?php setlocale(LC_TIME, "fr_FR", "French");
+                                                echo strftime("%d/%m/%G", strtotime($row["dateCommande"]));
+                                                ?></td>
                                             <td><?php if ($row["arrivee"] == 1) { ?>
                                                     Oui
                                                 <?php } else if ($row["arrivee"] == 0) { ?>
@@ -344,7 +359,7 @@ if (!isset($_SESSION["username"])) {
                                     <td><input type="date" class="form-control" id="dateCommande_a" name="dateCommande_a" value="" required><b></b></td>
                                 </tr>
                                 <tr>
-                                    <th>La commande est-elle déjà arrivée ?</th>
+                                    <th>La commande est-elle arrivée ?</th>
                                     <td>
                                         <input type="radio" id="arrivee_a" name="arrivee_a" value="1" checked>&nbsp;Oui
                                         <input type="radio" id="arrivee_a" name="arrivee_a" value="0">&nbsp;Non
@@ -384,7 +399,6 @@ if (!isset($_SESSION["username"])) {
                                 <tr>
                                     <th>Fabricant</th>
                                     <th>Nom des produits</th>
-                                    <th>Code produit</th>
                                     <th>Quantité</th>
                                     <th>Technicien</th>
                                 </tr>
@@ -412,23 +426,25 @@ if (!isset($_SESSION["username"])) {
                 <div class="modal-body">
                     <div id="doubleU" style="display: none;"></div>
                     <div class="table-responsive">
-                        <form id="update_form">
-                            <tr>
-                                <th>Numéro de commande</th>
-                                <td><input class="form-control" id="numeroCommande_u" name="numeroCommande_u" size="40px" value="" required><b></b></td>
-                            </tr>
-                            <tr>
-                                <th>Date de commande</th>
-                                <td><input type="date" class="form-control" id="dateCommande_u" name="dateCommande_u" value="" required><b></b></td>
-                            </tr>
-                            <tr>
-                                <th>La commande est-elle déjà arrivée ?</th>
-                                <td>
-                                    <input type="radio" id="arrivee_u" name="arrivee_u" value="1">&nbsp;Oui
-                                    <input type="radio" id="arrivee_u" name="arrivee_u" value="0">&nbsp;Non
-                                </td>
-                            </tr>
-                        </form>
+                        <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
+                            <form id="update_form">
+                                <tr>
+                                    <th>Numéro de commande</th>
+                                    <td><input class="form-control" id="numeroCommande_u" name="numeroCommande_u" size="40px" value="" required><b></b></td>
+                                </tr>
+                                <tr>
+                                    <th>Date de commande</th>
+                                    <td><input type="date" class="form-control" id="dateCommande_u" name="dateCommande_u" value="" required><b></b></td>
+                                </tr>
+                                <tr>
+                                    <th>La commande est-elle arrivée ?</th>
+                                    <td>
+                                        <input type="radio" id="arrivee_u" name="arrivee_u" value="1">&nbsp;Oui
+                                        <input type="radio" id="arrivee_u" name="arrivee_u" value="0">&nbsp;Non
+                                    </td>
+                                </tr>
+                            </form>
+                        </table>
                     </div>
                 </div>
                 <!-- Modal footer -->
@@ -495,6 +511,9 @@ toggle between hiding and showing the dropdown content */
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>
+
+    <!-- Rechercher -->
+    <script src="js/search.js"></script>
 </body>
 
 </html>

@@ -71,15 +71,21 @@ if (!isset($_SESSION["username"])) {
 			});
 		});
 
+		$(document).on('click', '.add', function(e) {
+			var tproduitsstockesPK = $(this).attr("data-id");
+			var nomModele = $(this).attr("data-modele");
+			var nomFabricant = $(this).attr("data-fabricant");
+			document.getElementById("afficherAddSortie").innerHTML = "Ajouter une entrée pour " + nomFabricant + "&nbsp;" + nomModele;
+			$('#tproduitsstockesFK_a').val(tproduitsstockesPK);
+		});
+
 		// POST
 		$(document).on('click', '#btn-add', function(e) {
 			var data = $("#tentrees_form").serialize();
-			console.log(data);
-			console.log($("#codeProduit_a").val());
 			$.ajax({
 				data: {
-					codeProduit: $("#codeProduit_a").val(),
 					quantiteEntree: $("#quantiteEntree_a").val(),
+					tproduitsstockesFK: $("#tproduitsstockesFK_a").val(),
 					tcommandesFK: $("#tcommandesFK_a").val(),
 					ttechnicienFK: $("#ttechnicienFK_a").val(),
 					type: "1"
@@ -92,9 +98,9 @@ if (!isset($_SESSION["username"])) {
 						var dataResult = JSON.parse(dataResult);
 					} catch (e) {
 						if (e instanceof SyntaxError) {
-							alert("Erreur lors de la requête !", true);
+							alert("Erreur lors de la requête : " + dataResult, true);
 						} else {
-							alert("Erreur lors de la requête !", false);
+							alert("Erreur lors de la requête : " + dataResult, false);
 						}
 					}
 					if (dataResult.statusCode == 200) {
@@ -111,6 +117,7 @@ if (!isset($_SESSION["username"])) {
 			});
 		});
 
+		// UPDATE
 		$(document).on('click', '.update', function(e) {
 			var tproduitsstockesPK = $(this).attr("data-id");
 			var tlibellesFK = $(this).attr("data-libelles");
@@ -120,41 +127,29 @@ if (!isset($_SESSION["username"])) {
 			$('#alerte_u').val(alerte);
 		});
 
-		$(document).ready(function() {
-			$('input[type="checkbox"]').click(function() {
-				if ($(this).prop("checked") == true) {
-					alerte = 1;
-				} else if ($(this).prop("checked") == false) {
-					alerte = 0;
-				}
-			});
-		});
-
-
 		$(document).on('click', '#update', function(e) {
 			var data = $("#update_form").serialize();
 			$.ajax({
 				data: {
-					tproduitsstockesPK: $("#tproduitsstockesPK_u").val(),
-					tlibellesFK: $("#tlibellesFK_u").val(),
-					alerte: $("#alerte_u").val(),
-					type: "2"
+					type: 2,
+					data
 				},
 				type: "post",
 				url: "php/saveEntrees.php",
 				success: function(dataResult) {
 					try {
+						alert(dataResult);
 						var dataResult = JSON.parse(dataResult);
 					} catch (e) {
 						if (e instanceof SyntaxError) {
-							alert("Erreur lors de la requête !", true);
+							alert("Erreur lors de la requête : " + dataResult, true);
 						} else {
-							alert("Erreur lors de la requête !", false);
+							alert("Erreur lors de la requête : " + dataResult, false);
 						}
 					}
 					if (dataResult.statusCode == 200) {
 						$('#myModalStocksUpdate').modal('hide');
-						alert('Données correctement ajoutées !');
+						alert('Données correctement modifiées !');
 						location.reload();
 					} else if (dataResult.statusCode == 201) {
 						alert(dataResult);
@@ -177,7 +172,7 @@ if (!isset($_SESSION["username"])) {
 			$.ajax({
 				data: {
 					raisonSortie: $("#raisonSortie_s").val(),
-					numeroSerie: $("#numeroSerie_s").val(),
+					quantiteSortie: $("#quantiteSortie_s").val(),
 					ttechnicienFK: $("#ttechnicienFK_s").val(),
 					tlieusortieFK: $("#tlieusortieFK_s").val(),
 					quantite: $("#quantite_s").val(),
@@ -192,9 +187,9 @@ if (!isset($_SESSION["username"])) {
 						var dataResult = JSON.parse(dataResult);
 					} catch (e) {
 						if (e instanceof SyntaxError) {
-							alert("Erreur lors de la requête !", true);
+							alert("Erreur lors de la requête : " + dataResult, true);
 						} else {
-							alert("Erreur lors de la requête !", false);
+							alert("Erreur lors de la requête : " + dataResult, false);
 						}
 					}
 					if (dataResult.statusCode == 200) {
@@ -241,6 +236,8 @@ if (!isset($_SESSION["username"])) {
 						<li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
 						<li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
 						<li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+						<li><a href="/stocks/emplacements.php"><i class="fas fa-warehouse"></i>&nbsp;Emplacements</a></li>
+						<li><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
 						<li class="divider"></li>
 						<li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
 					</ul>
@@ -250,7 +247,18 @@ if (!isset($_SESSION["username"])) {
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<li>
-						<a href="dashboard.php">Dashboard</a>
+						<a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+								<?php
+								$result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
+								$i = 0;
+								while ($row = mysqli_fetch_array($result)) {
+									$i++;
+								}
+								echo $i;
+
+								?>
+							</span>
+						</a>
 					</li>
 					<li class="active">
 						<a href="stocks.php">Stocks</a>
@@ -274,16 +282,14 @@ if (!isset($_SESSION["username"])) {
 
 				<!-- Page Heading -->
 				<div class="row">
-					<div class="col-lg-11">
+					<div class="col-lg-9">
 						<h1 class="page-header text-primary">
 							Stocks
 						</h1>
 					</div>
-					<br /><br />
-					<div class="col-1">
-						<button class="btn btn-warning" data-target="#myModaltentreeAdd" data-toggle="modal">
-							<i class="fas fa-plus"></i>
-						</button>
+					<div class="col-lg-3">
+						<br /><br /><br />
+						<i class="fas fa-search"></i>&nbsp;&nbsp;<input type="text" id="myInput" onkeyup="searchFunction()" placeholder="Rechercher..">
 					</div>
 				</div>
 				<!-- /.row -->
@@ -291,7 +297,7 @@ if (!isset($_SESSION["username"])) {
 				<div class="row">
 					<div class="col-lg-12">
 						<div class="table-responsive">
-							<table class="table table-hover">
+							<table class="table table-hover" id="myTable">
 								<thead>
 									<tr>
 										<th>Désignation</th>
@@ -305,7 +311,7 @@ if (!isset($_SESSION["username"])) {
 									$result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tcaracteristiquesproduits ON tproduitsstockes.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK JOIN tlibelles ON tlibelles.tlibellesPK = tproduitsstockes.tlibellesFK JOIN ttypeproduits ON ttypeproduits.ttypeproduitsPK = tcaracteristiquesproduits.ttypeproduitsFK JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK ORDER BY nomFabricant, nomTypeProduit, nomModele");
 									while ($row = mysqli_fetch_array($result)) {
 									?>
-										<?php if ($row["quantite"] < 3 && $row["quantite"] != null) {  ?>
+										<?php if ($row["quantite"] < 4 && $row["quantite"] != null && $row["alerte"] == 1) {  ?>
 											<tr tproduitsstockes="<?php echo $row["tproduitsstockesPK"]; ?>" style="background-color: #ffbdbd;">
 											<?php } else { ?>
 											<tr tproduitsstockes="<?php echo $row["tproduitsstockesPK"]; ?>">
@@ -314,6 +320,9 @@ if (!isset($_SESSION["username"])) {
 											<td><?php echo $row["nomEmplacement"]; ?>&nbsp;-&nbsp;<?php echo $row["nomLibelle"]; ?></td>
 											<td><?php echo $row["quantite"]; ?></td>
 											<td>
+												<button class="add btn btn-warning" data-target="#myModaltentreeAdd" data-toggle="modal" data-id="<?php echo $row["tproduitsstockesPK"]; ?>" data-modele="<?php echo $row["nomModele"]; ?>" data-fabricant="<?php echo $row["nomFabricant"]; ?>">
+													<i class="fas fa-plus"></i>
+												</button>&nbsp;
 												<button class="view btn btn-success" data-target="#myModalStocksView" data-toggle="modal" data-id="<?php echo $row["tproduitsstockesPK"]; ?>" data-nom="<?php echo $row["nomModele"]; ?>" data-fabricant=" <?php echo $row["nomFabricant"]; ?>">
 													<i class="far fa-eye"></i>
 												</button>&nbsp;
@@ -365,7 +374,6 @@ if (!isset($_SESSION["username"])) {
 									<th>Nom</th>
 									<th>Désignation</th>
 									<th>Compatibilité</th>
-									<th>Code produit</th>
 								</tr>
 							</thead>
 							<tbody id="stocks_details">
@@ -384,24 +392,18 @@ if (!isset($_SESSION["username"])) {
 				<!-- Modal Header -->
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal">&times;</button>
-					<h4 class="modal-title">Nouvelle entrée</h4>
+					<h4 class="modal-title" id="afficherAddSortie"></h4>
 				</div>
-				<!-- Modal body -->
-				<div class="modal-body">
-					<div id="doubleU" style="display: none;"></div>
-					<div class="table-responsive">
-						<table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-							<form id="tentrees_form">
-								<tr>
-									<th>Code produit</th>
-									<td>
-										<input class="form-control" id="codeProduit_a" name="codeProduit_a" value="" placeholder="Code barre du produit" required><b></b>
-									</td>
-								</tr>
+				<form id="tentrees_form">
+					<!-- Modal body -->
+					<div class="modal-body">
+						<div id="doubleU" style="display: none;"></div>
+						<div class="table-responsive">
+							<table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
 								<tr>
 									<th>Quantité</th>
 									<td>
-										<input type="number" class="form-control" id="quantiteEntree_a" name="quantiteEntree_a" required><b></b>
+										<input type="number" class="form-control" id="quantiteEntree_a" name="quantiteEntree_a" min="1" required><b></b>
 									</td>
 								</tr>
 								<tr>
@@ -434,15 +436,16 @@ if (!isset($_SESSION["username"])) {
 										</select>
 									</td>
 								</tr>
-							</form>
-						</table>
+							</table>
+						</div>
 					</div>
-				</div>
-				<!-- Modal footer -->
-				<div class="modal-footer">
-					<button type="button" class="btn btn-warning" id="btn-add">Ajouter</button>
-					<input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
-				</div>
+					<!-- Modal footer -->
+					<div class="modal-footer">
+						<input type="hidden" id="tproduitsstockesFK_a" name="tproduitsstockesFK_a">
+						<button type="button" class="btn btn-warning" id="btn-add">Ajouter</button>
+						<input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>
@@ -480,11 +483,12 @@ if (!isset($_SESSION["username"])) {
 								<tr>
 									<th>Alerter en cas de stocks bas ?</th>
 									<td>
-										<input type="checkbox" id="alerte_u" name="alerte_u" value="1" checked>
-										<label for="alerte_u">Oui</label>
+										<input type="radio" id="alerte_u_oui" name="alerte_u" value="1">&nbsp;Oui
+										<input type="radio" id="alerte_u_non" name="alerte_u" value="0">&nbsp;Non
 									</td>
 								</tr>
 							</table>
+
 							<small>Pour modifier les caractéristiques du produit, rendez-vous dans <a href="caracteristiquesProduits.php">Modèles des produits</a>.</small>
 						</div>
 					</div>
@@ -519,13 +523,7 @@ if (!isset($_SESSION["username"])) {
 								<tr>
 									<th>Raison de la sortie</th>
 									<td>
-										<input class="form-control" id="raisonSortie_s" name="raisonSortie_s" size="40px" value=""><b></b>
-									</td>
-								</tr>
-								<tr>
-									<th>Numéro de série</th>
-									<td>
-										<input class="form-control" id="numeroSerie_s" name="numeroSerie_s" size="40px" value=""><b></b>
+										<input class="form-control" id="raisonSortie_s" name="raisonSortie_s" size="40px" placeholder="Champ non obligatoire"><b></b>
 									</td>
 								</tr>
 								<tr>
@@ -561,7 +559,7 @@ if (!isset($_SESSION["username"])) {
 								<tr>
 									<th>Quantité</th>
 									<td>
-										<input type="number" class="form-control" id="quantite_s" name="quantite_s" size="40px" value="" required><b></b>
+										<input type="number" class="form-control" id="quantiteSortie_s" name="quantiteSortie_s" min="1" size="40px" value="" required><b></b>
 									</td>
 								</tr>
 							</form>
@@ -584,6 +582,9 @@ if (!isset($_SESSION["username"])) {
 
 	<!-- Bootstrap Core JavaScript -->
 	<script src="js/bootstrap.min.js"></script>
+
+	<!-- Rechercher -->
+	<script src="js/search.js"></script>
 </body>
 
 </html>

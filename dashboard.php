@@ -47,6 +47,31 @@ if (!isset($_SESSION["username"])) {
 		<![endif]-->
 </head>
 <script>
+	function date() {
+		var dateCles = document.getElementById('dateCles');
+		dateCles.valueAsDate = new Date();
+	}
+
+	// GET
+	dateCles.onchange = function() {
+		console.log("samarche");
+		var dateSortie = $(this).attr("data-date");
+		$.ajax({
+			url: "php/saveDashboard.php",
+			method: "GET",
+			data: {
+				type: 4,
+				dateSortie: dateSortie
+			},
+			success: function(dataResult) {
+				$('#produitSortieDate').html(dataResult);
+			},
+			error: function(request, status, error) {
+				alert(request.responseText);
+			}
+		});
+	}
+
 	// DELETE
 	$(document).on("click", ".delete", function() {
 		var tproduitsstockesPK = $(this).attr("data-id");
@@ -103,6 +128,8 @@ if (!isset($_SESSION["username"])) {
 						<li><a href="/stocks/fabricants.php"><i class="fab fa-phabricator"></i>&nbsp;Fabricants</a></li>
 						<li><a href="/stocks/typesProduits.php"><i class="fas fa-laptop"></i>&nbsp;Types de produits</a></li>
 						<li><a href="/stocks/lieuSortie.php"><i class="fas fa-door-closed"></i>&nbsp;Lieux de sortie</a></li>
+						<li><a href="/stocks/emplacements.php"><i class="fas fa-warehouse"></i>&nbsp;Emplacements</a></li>
+						<li><a href="/stocks/uniteGestion.php"><i class="fas fa-paper-plane"></i>&nbsp;Unités de gestion</a></li>
 						<li class="divider"></li>
 						<li><a href="../stocks/php/logout.php"><i class="fas fa-sign-out-alt"></i> Se déconnecter</a></li>
 					</ul>
@@ -112,7 +139,18 @@ if (!isset($_SESSION["username"])) {
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<li class="active">
-						<a href="dashboard.php">Dashboard</a>
+						<a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+								<?php
+								$result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
+								$i = 0;
+								while ($row = mysqli_fetch_array($result)) {
+									$i++;
+								}
+								echo $i;
+
+								?>
+							</span>
+						</a>
 					</li>
 					<li>
 						<a href="stocks.php">Stocks</a>
@@ -154,7 +192,7 @@ if (!isset($_SESSION["username"])) {
 								<?php
 								$result = mysqli_query($conn, "SELECT * FROM tproduitsstockes JOIN tcaracteristiquesproduits ON tproduitsstockes.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK");
 								while ($row = mysqli_fetch_array($result)) {
-									if ($row["quantite"] < 3 && $row["quantite"] != null && $row["alerte"] == 1) {
+									if ($row["quantite"] < 4 && $row["quantite"] != null && $row["alerte"] == 1) {
 								?>
 										<div class="col-lg-3">
 											<div class="panel">
@@ -182,18 +220,18 @@ if (!isset($_SESSION["username"])) {
 				<div class="col-lg-12">
 					<h1 class="page-header text-success">
 						Chiffres clés
-						<input type="date" name="dateofbirth" id="dateofbirth">
+						<input type="date" id="dateCles" name="dateCles" value="dateCles" onkeyup="date()">
 					</h1>
 				</div>
 			</div>
 			<!-- /.row -->
 
-			<div class="row">
+			<div class=" row">
 				<div class="col-lg-12">
 					<div class="panel panel-success">
 						<div class="panel-heading">
-							<div class="panel-body">
-								<div class="col-lg-3">
+							<div class="panel-body" id="produitSortieDate">
+								<!--<div class="col-lg-3">
 									<div class="panel">
 										<div class="panel-body">
 											<h3 class="text-center">Success</h3>
@@ -213,14 +251,7 @@ if (!isset($_SESSION["username"])) {
 											<h3 class="text-center">Success</h3>
 										</div>
 									</div>
-								</div>
-								<div class="col-lg-3">
-									<div class="panel">
-										<div class="panel-body">
-											<h3 class="text-center">Success</h3>
-										</div>
-									</div>
-								</div>
+								</div>-->
 							</div>
 						</div>
 					</div>
@@ -246,7 +277,7 @@ if (!isset($_SESSION["username"])) {
 					</div>
 					<div class="modal-body">
 						<input type="hidden" id="tproduitsstockesPK_d" name="tproduitsstockesPK" class="form-control">
-						<p>Êtes-vous sûr de vouloir cette alerte ?</p>
+						<p>Êtes-vous sûr de vouloir retirer cette alerte ?</p>
 						<p class="text-warning"><small>Pour la réactiver, rendez-vous à la page <a href="./stocks.php">stocks</a>.</small></p>
 					</div>
 					<!-- Modal footer -->
@@ -264,6 +295,9 @@ if (!isset($_SESSION["username"])) {
 
 	<!-- Bootstrap Core JavaScript -->
 	<script src="js/bootstrap.min.js"></script>
+
+	<!-- Rechercher -->
+	<script src="js/search.js"></script>
 </body>
 
 </html>
