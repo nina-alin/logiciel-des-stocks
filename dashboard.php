@@ -2,6 +2,7 @@
 // Initialiser la session
 session_start();
 require_once('php/connect.php');
+
 // Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
 if (!isset($_SESSION["username"])) {
 	header("Location: login.php");
@@ -47,23 +48,17 @@ if (!isset($_SESSION["username"])) {
 		<![endif]-->
 </head>
 <script>
-	function date() {
-		var dateCles = document.getElementById('dateCles');
-		dateCles.valueAsDate = new Date();
-	}
-
-	// GET
-	dateCles.onchange = function() {
-		console.log("samarche");
-		var dateSortie = $(this).attr("data-date");
+	function dateCles() {
+		var x = document.getElementById("dateCles").value;
 		$.ajax({
 			url: "php/saveDashboard.php",
 			method: "GET",
 			data: {
 				type: 4,
-				dateSortie: dateSortie
+				dateSortie: x
 			},
 			success: function(dataResult) {
+				console.log(dataResult);
 				$('#produitSortieDate').html(dataResult);
 			},
 			error: function(request, status, error) {
@@ -220,7 +215,7 @@ if (!isset($_SESSION["username"])) {
 				<div class="col-lg-12">
 					<h1 class="page-header text-success">
 						Chiffres clés
-						<input type="date" id="dateCles" name="dateCles" value="dateCles" onkeyup="date()">
+						<input type="date" id="dateCles" onchange="dateCles()" value="<?php echo date('Y-m-d'); ?>">
 					</h1>
 				</div>
 			</div>

@@ -130,6 +130,7 @@ if (!isset($_SESSION["username"])) {
 
     $(document).on('click', '#update', function(e) {
         var data = $("#update_form").serialize();
+        alert('Données correctement modifiées !');
         $.ajax({
             data: {
                 type: 2,
@@ -292,6 +293,7 @@ if (!isset($_SESSION["username"])) {
                                     <tr>
                                         <th>Désignation</th>
                                         <th>Type de produit</th>
+                                        <th>Compatibilité</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -303,10 +305,8 @@ if (!isset($_SESSION["username"])) {
                                         <tr ttcaracteristiquesproduitsPK="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>">
                                             <td><?php echo $row["nomFabricant"]; ?>&nbsp;<?php echo $row["nomModele"]; ?></td>
                                             <td><?php echo $row["nomTypeProduit"]; ?></td>
+                                            <td><?php echo $row["compatibilite"]; ?></td>
                                             <td>
-                                                <button class="view btn btn-success" data-target="#myModalMarquesView" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>" data-nom-fabricant="<?php echo $row["nomFabricant"]; ?>">
-                                                    <i class="far fa-eye"></i>
-                                                </button>&nbsp;
                                                 <button class="update btn btn-primary" data-target="#myModalCaracteristiquesProduitsUpdate" data-toggle="modal" data-id="<?php echo $row["tcaracteristiquesproduitsPK"]; ?>" data-id-fabricant="<?php echo $row["tfabricantsFK"]; ?>" data-nom-fabricant="<?php echo $row["nomFabricant"]; ?>" data-nom-modele="<?php echo $row["nomModele"]; ?>" data-id-typeproduit="<?php echo $row["ttypeproduitsFK"]; ?>" data-compatibilite="<?php echo $row["compatibilite"]; ?>">
                                                     <i class="fas fa-pen"></i>
                                                 </button>&nbsp;
@@ -421,37 +421,6 @@ if (!isset($_SESSION["username"])) {
         </div>
     </div>
 
-    <!-- The Modal Type Produit view-->
-    <div class="modal fade" id="myModalTypeProduitView">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <!-- Modal Header -->
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title" id="afficherNomTypeProduit"></h4>
-                </div>
-                <!-- Modal body -->
-                <div class="modal-body">
-                    <div id="doubleU" style="display: none;"></div>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Nom du produit</th>
-                                    <th>Marque</th>
-                                    <th>Lieu de stockage</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- The Modal Caracteristique Produit Update-->
     <div class="modal fade" id="myModalCaracteristiquesProduitsUpdate">
         <div class="modal-dialog">
@@ -519,62 +488,41 @@ if (!isset($_SESSION["username"])) {
                 </form>
             </div>
         </div>
+    </div>
 
-        <!-- The Modal Type Produit Delete-->
-        <div class="modal fade" id="myModalCaracteristiquesProduitsDelete">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <form>
-                        <!-- Modal Header -->
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal">&times;</button>
-                            <h4 class="modal-title">Supprimer un type de produits</h4>
-                        </div>
-                        <div class="modal-body">
-                            <input type="hidden" id="ttypeproduitsPK_d" name="ttypeproduitsPK" class="form-control">
-                            <p>Êtes-vous sûr de vouloir supprimer ce type de produits ?</p>
-                            <p class="text-warning"><small>Cette action ne peut pas être annulée.</small></p>
-                        </div>
-                        <!-- Modal footer -->
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" id="delete">Supprimer</button>
-                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
-                        </div>
-                    </form>
-                </div>
+    <!-- The Modal Caracteristique Produit Delete-->
+    <div class="modal fade" id="myModalCaracteristiquesProduitsDelete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form>
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Supprimer un modèle de produit</h4>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="tcaracteristiquesproduitsPK_d" name="tcaracteristiquesproduitsPK_d" class="form-control">
+                        <p>Êtes-vous sûr de vouloir supprimer ce modèle ?</p>
+                        <p class="text-warning"><small>Cette action ne peut pas être annulée.</small></p>
+                    </div>
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="delete">Supprimer</button>
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
 
-        <script>
-            /* When the user clicks on the button, 
-toggle between hiding and showing the dropdown content */
-            function myFunction() {
-                document.getElementById("myDropdown").classList.toggle("show");
-            }
+    <!-- jQuery Version 1.11.0 -->
+    <script src="js/jquery-1.11.0.js"></script>
 
-            // Close the dropdown if the user clicks outside of it
-            window.onclick = function(event) {
-                if (!event.target.matches('.dropbtn')) {
-                    var dropdowns = document.getElementsByClassName("dropdown-content");
-                    var i;
-                    for (i = 0; i < dropdowns.length; i++) {
-                        var openDropdown = dropdowns[i];
-                        if (openDropdown.classList.contains('show')) {
-                            openDropdown.classList.remove('show');
-                        }
-                    }
-                }
-            }
-        </script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
 
-        <!-- jQuery Version 1.11.0 -->
-        <script src="js/jquery-1.11.0.js"></script>
-
-        <!-- Bootstrap Core JavaScript -->
-        <script src="js/bootstrap.min.js"></script>
-
-        <!-- Rechercher -->
-        <script src="js/search.js"></script>
+    <!-- Rechercher -->
+    <script src="js/search.js"></script>
 </body>
 
 </html>

@@ -411,7 +411,7 @@ if (!isset($_SESSION["username"])) {
 									<td>
 										<select class="form-control" id="tcommandesFK_a" name="tcommandesFK_a" value="" required>
 											<?php
-											$result = mysqli_query($conn, "SELECT * FROM tcommandes");
+											$result = mysqli_query($conn, "SELECT * FROM tcommandes WHERE arrivee=1");
 											while ($row = mysqli_fetch_array($result)) {
 											?>
 												<option value="<?php echo $row["tcommandesPK"]; ?>"><?php echo $row["numeroCommande"]; ?></option>

@@ -369,7 +369,6 @@ if (!isset($_SESSION["username"])) {
                                     <th>Fabricant</th>
                                     <th>Modèle</th>
                                     <th>Quantité</th>
-                                    <th>Code Produit</th>
                                     <th>Emplacement</th>
                                 </tr>
                             </thead>

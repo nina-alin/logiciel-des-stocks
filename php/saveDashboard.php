@@ -27,7 +27,7 @@ if (count($_GET) > 0) {
 
         $dateSortie = $_GET['dateSortie'];
 
-        $sql = "SELECT * FROM `tsorties` JOIN tcaracteristiquesproduits ON tsorties.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tfabricants ON tfabricants.tfabricantsPK = tcaracteristiquesproduits.tfabricantsFK WHERE DATE(dateSortie) = $dateSortie";
+        $sql = "SELECT * FROM `tsorties` JOIN tcaracteristiquesproduits ON tsorties.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tfabricants ON tfabricants.tfabricantsPK = tcaracteristiquesproduits.tfabricantsFK WHERE DATE(dateSortie) = '$dateSortie'";
 
         $result = mysqli_query($conn, $sql);
         $output = '';
@@ -36,7 +36,7 @@ if (count($_GET) > 0) {
                 <div class="col-lg-3">
                     <div class="panel">
                         <div class="panel-body">
-                            <h3 class="text-center">&nbsp;' + $row["nomFabricant"] + '&nbsp;' + $row["nomModele"] + '<br />' + $row["quantiteSortie"] + '</h3>
+                            <h3 class="text-center">&nbsp;' . $row["nomFabricant"] . '&nbsp;' . $row["nomModele"] . '<br />' . $row["quantiteSortie"] . ' équipés</h3>
                         </div>
                     </div>
                 </div>

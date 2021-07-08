@@ -73,7 +73,6 @@ if (!isset($_SESSION["username"])) {
 
     // POST
     $(document).on('click', '#btn-add', function(e) {
-        var data = $("#commande_form").serialize();
         $.ajax({
             data: {
                 numeroCommande: $("#numeroCommande_a").val(),

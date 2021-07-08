@@ -77,11 +77,14 @@ if (count($_POST) > 0) {
         $sql = "DELETE FROM `tcaracteristiquesproduits` WHERE tcaracteristiquesproduitsPK=$tcaracteristiquesproduitsPK";
 
         if (mysqli_query($conn, $sql)) {
-            echo $tcaracteristiquesproduitsPK;
-        } else {
-            echo mysqli_error($conn);
+            $sql = "DELETE FROM `tproduitsstockes` WHERE tcaracteristiquesproduitsFK=$tcaracteristiquesproduitsPK";
+            if (mysqli_query($conn, $sql)) {
+                echo $tcaracteristiquesproduitsPK;
+            } else {
+                echo mysqli_error($conn);
+            }
+            mysqli_close($conn);
         }
-        mysqli_close($conn);
     }
 }
 
