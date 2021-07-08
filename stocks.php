@@ -48,6 +48,44 @@ if (!isset($_SESSION["username"])) {
 			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 		<![endif]-->
 	<script>
+		function typeEntreeFunction() {
+			if (document.getElementById('typeEntree').value == 1) {
+				$.ajax({
+					url: "php/saveEntrees.php",
+					method: "GET",
+					data: {
+						type: 5,
+					},
+					success: function(dataResult) {
+						$("#trTypeEntree").html(dataResult);
+					}
+				});
+			} else if (document.getElementById('typeEntree').value == 2) {
+				$.ajax({
+					url: "php/saveEntrees.php",
+					method: "GET",
+					data: {
+						type: 6,
+					},
+					success: function(dataResult) {
+						$("#trTypeEntree").html(dataResult);
+					}
+				});
+			}
+			$("#trQuantite").html('<th>Quantité</th>' +
+				'<td><input type="number" class="form-control" id="quantiteEntree_a" name="quantiteEntree_a" min="1" required><b></b></td></tr>');
+			$.ajax({
+				url: "php/saveEntrees.php",
+				method: "GET",
+				data: {
+					type: 7,
+				},
+				success: function(dataResult) {
+					$("#trTechnicien").html(dataResult);
+				}
+			});
+		}
+
 		// GET
 		$(document).on('click', '.view', function(e) {
 			var tproduitsstockesPK = $(this).attr("data-id");
@@ -81,40 +119,75 @@ if (!isset($_SESSION["username"])) {
 
 		// POST
 		$(document).on('click', '#btn-add', function(e) {
-			var data = $("#tentrees_form").serialize();
-			$.ajax({
-				data: {
-					quantiteEntree: $("#quantiteEntree_a").val(),
-					tproduitsstockesFK: $("#tproduitsstockesFK_a").val(),
-					tcommandesFK: $("#tcommandesFK_a").val(),
-					ttechnicienFK: $("#ttechnicienFK_a").val(),
-					type: "1"
-				},
-				type: "post",
-				url: "php/saveEntrees.php",
-				success: function(dataResult) {
-					console.log(dataResult);
-					try {
-						var dataResult = JSON.parse(dataResult);
-					} catch (e) {
-						if (e instanceof SyntaxError) {
-							alert("Erreur lors de la requête : " + dataResult, true);
-						} else {
-							alert("Erreur lors de la requête : " + dataResult, false);
+			if (document.getElementById('typeEntree').value == 1) {
+				$.ajax({
+					data: {
+						quantiteEntree: $("#quantiteEntree_a").val(),
+						tproduitsstockesFK: $("#tproduitsstockesFK_a").val(),
+						tcommandesFK: $("#tcommandesFK_a").val(),
+						ttechnicienFK: $("#ttechnicienFK_a").val(),
+						type: "1"
+					},
+					type: "post",
+					url: "php/saveEntrees.php",
+					success: function(dataResult) {
+						console.log(dataResult);
+						try {
+							var dataResult = JSON.parse(dataResult);
+						} catch (e) {
+							if (e instanceof SyntaxError) {
+								alert("Erreur lors de la requête : " + dataResult, true);
+							} else {
+								alert("Erreur lors de la requête : " + dataResult, false);
+							}
 						}
+						if (dataResult.statusCode == 200) {
+							$('#myModaltentreeAdd').modal('hide');
+							alert('Données correctement ajoutées !');
+							location.reload();
+						} else if (dataResult.statusCode == 201) {
+							alert(dataResult);
+						}
+					},
+					error: function(request, status, error) {
+						alert(request.responseText);
 					}
-					if (dataResult.statusCode == 200) {
-						$('#myModaltentreeAdd').modal('hide');
-						alert('Données correctement ajoutées !');
-						location.reload();
-					} else if (dataResult.statusCode == 201) {
-						alert(dataResult);
+				});
+			} else if (document.getElementById('typeEntree').value == 2) {
+				$.ajax({
+					data: {
+						quantiteEntree: $("#quantiteEntree_a").val(),
+						tproduitsstockesFK: $("#tproduitsstockesFK_a").val(),
+						ttechnicienFK: $("#ttechnicienFK_a").val(),
+						tlieusortieFK: $("#tlieusortieFK_a").val(),
+						type: "8"
+					},
+					type: "post",
+					url: "php/saveEntrees.php",
+					success: function(dataResult) {
+						console.log(dataResult);
+						try {
+							var dataResult = JSON.parse(dataResult);
+						} catch (e) {
+							if (e instanceof SyntaxError) {
+								alert("Erreur lors de la requête : " + dataResult, true);
+							} else {
+								alert("Erreur lors de la requête : " + dataResult, false);
+							}
+						}
+						if (dataResult.statusCode == 200) {
+							$('#myModaltentreeAdd').modal('hide');
+							alert('Données correctement ajoutées !');
+							location.reload();
+						} else if (dataResult.statusCode == 201) {
+							alert(dataResult);
+						}
+					},
+					error: function(request, status, error) {
+						alert(request.responseText);
 					}
-				},
-				error: function(request, status, error) {
-					alert(request.responseText);
-				}
-			});
+				});
+			}
 		});
 
 		// UPDATE
@@ -127,18 +200,20 @@ if (!isset($_SESSION["username"])) {
 			$('#alerte_u').val(alerte);
 		});
 
+
 		$(document).on('click', '#update', function(e) {
-			var data = $("#update_form").serialize();
 			$.ajax({
 				data: {
-					type: 2,
-					data
+					type: "2",
+					alerte: $('input[name="alerte_u"]:checked').val(),
+					tlibellesFK: $("#tlibellesFK_u").val(),
+					tproduitsstockesPK: $("#tproduitsstockesPK_u").val(),
 				},
 				type: "post",
 				url: "php/saveEntrees.php",
 				success: function(dataResult) {
+					console.log(dataResult);
 					try {
-						alert(dataResult);
 						var dataResult = JSON.parse(dataResult);
 					} catch (e) {
 						if (e instanceof SyntaxError) {
@@ -401,41 +476,18 @@ if (!isset($_SESSION["username"])) {
 						<div class="table-responsive">
 							<table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
 								<tr>
-									<th>Quantité</th>
+									<th>D'où provient le produit ?</th>
 									<td>
-										<input type="number" class="form-control" id="quantiteEntree_a" name="quantiteEntree_a" min="1" required><b></b>
-									</td>
-								</tr>
-								<tr>
-									<th>Numéro de commande</th>
-									<td>
-										<select class="form-control" id="tcommandesFK_a" name="tcommandesFK_a" value="" required>
-											<?php
-											$result = mysqli_query($conn, "SELECT * FROM tcommandes WHERE arrivee=1");
-											while ($row = mysqli_fetch_array($result)) {
-											?>
-												<option value="<?php echo $row["tcommandesPK"]; ?>"><?php echo $row["numeroCommande"]; ?></option>
-											<?php
-											}
-											?>
+										<select id="typeEntree" name="typeEntree" class="form-control" onchange="typeEntreeFunction()">
+											<option disabled selected value> -- Sélectionnez une option -- </option>
+											<option value="1">Une commande</option>
+											<option value="2">Une UG</option>
 										</select>
 									</td>
 								</tr>
-								<tr>
-									<th>Technicien</th>
-									<td>
-										<select class="form-control" id="ttechnicienFK_a" name="ttechnicienFK_a" value="" required>
-											<?php
-											$result = mysqli_query($conn, "SELECT * FROM ttechnicien ORDER BY nomTechnicien, prenomTechnicien");
-											while ($row = mysqli_fetch_array($result)) {
-											?>
-												<option value="<?php echo $row["ttechnicienPK"]; ?>"><?php echo $row["prenomTechnicien"]; ?>&nbsp;<?php echo $row["nomTechnicien"]; ?></option>
-											<?php
-											}
-											?>
-										</select>
-									</td>
-								</tr>
+								<tr id="trTypeEntree"></tr>
+								<tr id="trQuantite"></tr>
+								<tr id="trTechnicien"></tr>
 							</table>
 						</div>
 					</div>
@@ -450,57 +502,53 @@ if (!isset($_SESSION["username"])) {
 		</div>
 	</div>
 
-	<!-- The Modal Stocks Update-->
+	<!-- The Modal libellé Update-->
 	<div class="modal fade" id="myModalStocksUpdate">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<form id="update_form">
-					<!-- Modal Header -->
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal">&times;</button>
-						<h4 class="modal-title">Modifier un produit stocké</h4>
+				<!-- Modal Header -->
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+					<h4 class="modal-title">Modifier un produit stocké</h4>
+				</div>
+				<!-- Modal body -->
+				<div class="modal-body">
+					<div id="doubleU" style="display: none;"></div>
+					<div class="table-responsive">
+						<table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
+							<tr>
+								<th>Emplacement</th>
+								<td>
+									<select class="form-control" id="tlibellesFK_u" name="tlibellesFK_u" required>
+										<?php
+										$result = mysqli_query($conn, "SELECT * FROM tlibelles JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK");
+										while ($row = mysqli_fetch_array($result)) {
+										?>
+											<option value="<?php echo $row["tlibellesPK"]; ?>"><?php echo $row["nomEmplacement"]; ?> - <?php echo $row["nomLibelle"]; ?></option>
+										<?php
+										}
+										?>
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<th>Alerter en cas de stocks bas ?</th>
+								<td>
+									<input type="radio" id="alerte_u_oui" name="alerte_u" value="1">&nbsp;Oui
+									<input type="radio" id="alerte_u" name="alerte_u" value="0">&nbsp;Non
+								</td>
+							</tr>
+						</table>
 					</div>
-					<!-- Modal body -->
-					<div class="modal-body">
-						<div id="doubleU" style="display: none;"></div>
-						<div class="table-responsive">
-							<table class="table table-striped table-bordered table-hover dataTable no-footer dtr-inline" id="dataTables-example" role="grid" aria-describedby="dataTables-example_info" style="width: 100%;">
-								<tr>
-									<th>Emplacement</th>
-									<td>
-										<select class="form-control" id="tlibellesFK_u" name="tlibellesFK_u" value="" required>
-											<?php
-											$result = mysqli_query($conn, "SELECT * FROM tlibelles JOIN templacements ON tlibelles.templacementsFK = templacements.templacementsPK ORDER BY nomEmplacement, nomLibelle");
-											while ($row = mysqli_fetch_array($result)) {
-											?>
-												<option value="<?php echo $row["tlibellesPK"]; ?>"><?php echo $row["nomEmplacement"]; ?>&nbsp;-&nbsp;<?php echo $row["nomLibelle"]; ?></option>
-											<?php
-											}
-											?>
-										</select>
-									</td>
-								</tr>
-								<tr>
-									<th>Alerter en cas de stocks bas ?</th>
-									<td>
-										<input type="radio" id="alerte_u_oui" name="alerte_u" value="1">&nbsp;Oui
-										<input type="radio" id="alerte_u_non" name="alerte_u" value="0">&nbsp;Non
-									</td>
-								</tr>
-							</table>
-
-							<small>Pour modifier les caractéristiques du produit, rendez-vous dans <a href="caracteristiquesProduits.php">Modèles des produits</a>.</small>
-						</div>
-					</div>
-					<!-- Modal footer -->
-					<div class="modal-footer">
-						<input type="hidden" id="tproduitsstockesPK_u" name="tproduitsstockesPK_u" name="type">
-						<button type="submit" class="btn btn-primary" id="update">
-							<span class="fas fa-pen"></span> Modifier
-						</button>
-						<input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
-					</div>
-				</form>
+				</div>
+				<!-- Modal footer -->
+				<div class="modal-footer">
+					<input type="hidden" id="tproduitsstockesPK_u" name="tproduitsstockesPK_u" name="type">
+					<button type="submit" class="btn btn-primary" id="update">
+						<span class="fas fa-pen"></span> Modifier
+					</button>
+					<input type="button" class="btn btn-default" data-dismiss="modal" value="Annuler">
+				</div>
 			</div>
 		</div>
 	</div>

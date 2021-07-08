@@ -28,7 +28,7 @@ if (count($_GET) > 0) {
     }
 }
 
-// POST
+// POST (SI COMMANDE)
 if (count($_POST) > 0) {
 
     if ($_POST['type'] == 1) {
@@ -66,16 +66,17 @@ if (count($_POST) > 0) {
     }
 }
 
+
 // UPDATE
 if (count($_POST) > 0) {
 
     if ($_POST['type'] == 2) {
 
-        $tproduitsstockesPK = $_POST['tproduitsstockesPK_u'];
-        $tlibellesFK = $_POST['tlibellesFK_u'];
-        $alerte = $_POST['alerte_u'];
+        $tproduitsstockesPK = $_POST['tproduitsstockesPK'];
+        $tlibellesFK = $_POST['tlibellesFK'];
+        $alerte = $_POST['alerte'];
 
-        $sql = "UPDATE `tproduitsstockes` SET `tlibellesFK`=$tlibellesFK, `alerte`=$alerte WHERE `tproduitsstockesPK`=$tproduitsstockesPK;";
+        $sql = "UPDATE `tproduitsstockes` SET `tlibellesFK`=$tlibellesFK,`alerte`=$alerte WHERE `tproduitsstockesPK`=$tproduitsstockesPK";
 
         if (mysqli_query($conn, $sql)) {
             echo json_encode(array("statusCode" => 200));
@@ -120,48 +121,6 @@ if (count($_POST) > 0) {
 
                     // on envoie un mail (pas encore fonctionnel) si la quantité stockée est trop basse
                     if ($row["quantite"] < 4) {
-                        try {
-                            // Plusieurs destinataires
-                            $to  = 'alin.nina28@gmail.com, nina.alin@crous-lille.fr'; // notez la virgule
-
-                            // Sujet
-                            $subject = 'Calendrier des anniversaires pour Août';
-
-                            // message
-                            $message = '
-                                        <html>
-                                        <head>
-                                        <title>Calendrier des anniversaires pour Août</title>
-                                        </head>
-                                        <body>
-                                        <p>Voici les anniversaires à venir au mois d\'Août !</p>
-                                        <table>
-                                            <tr>
-                                            <th>Personne</th><th>Jour</th><th>Mois</th><th>Année</th>
-                                            </tr>
-                                            <tr>
-                                            <td>Josiane</td><td>3</td><td>Août</td><td>1970</td>
-                                            </tr>
-                                            <tr>
-                                            <td>Emma</td><td>26</td><td>Août</td><td>1973</td>
-                                            </tr>
-                                        </table>
-                                        </body>
-                                        </html>
-                                        ';
-
-                            // Pour envoyer un mail HTML, l'en-tête Content-type doit être défini
-                            $headers[] = 'MIME-Version: 1.0';
-                            $headers[] = 'Content-type: text/html; charset=iso-8859-1';
-
-                            // En-têtes additionnels
-                            $headers[] = 'To: Alin N <alin.nina28@gmail.com>, Nina Alin <nina.alin@crous-lille.fr>';
-                            $headers[] = 'From: informatique <informatique@crous-lille.fr>';
-                            // Envoi
-                            mail($to, $subject, $message, implode("\r\n", $headers));
-                        } catch (Exception $e) {
-                            echo 'Exception reçue : ',  $e->getMessage(), "\n";
-                        }
                     }
                     echo json_encode(array("statusCode" => 200));
                 } else {
@@ -173,5 +132,108 @@ if (count($_POST) > 0) {
 
             mysqli_close($conn);
         }
+    }
+}
+
+// TR COMMANDE
+if (count($_GET) > 0) {
+
+    if ($_GET['type'] == 5) {
+
+        $sql = "SELECT * FROM tcommandes WHERE arrivee=1";
+
+        $result = mysqli_query($conn, $sql);
+        $output = '<th>Numéro de commande</th>
+        <td>
+            <select class="form-control" id="tcommandesFK_a" name="tcommandesFK_a" value="" required>';
+
+        while ($row = mysqli_fetch_array($result)) {
+            $output .= '  
+                <option value=" ' . $row["tcommandesPK"] . '">' . $row["numeroCommande"] . '</option>
+             ';
+        }
+        $output .= '</select></td></tr>';
+        echo $output;
+    }
+}
+
+// TR UG
+if (count($_GET) > 0) {
+
+    if ($_GET['type'] == 6) {
+
+        $sql = "SELECT * FROM tlieusortie JOIN tunitegestion ON tlieusortie.tunitegestionFK = tunitegestion.tunitegestionPK";
+
+        $result = mysqli_query($conn, $sql);
+        $output = '<th>UG</th>
+        <td>
+            <select class="form-control" id="tlieusortieFK_a" name="tlieusortieFK_a" value="" required>';
+
+        while ($row = mysqli_fetch_array($result)) {
+            $output .= '  
+                <option value=" ' . $row["tlieusortiePK"] . '">' . $row["nomUniteGestion"] . ' - ' . $row["nomLieuSortie"] . '</option>
+             ';
+        }
+        $output .= '</select></td></tr>';
+        echo $output;
+    }
+}
+
+// TR TECHNICIEN
+if (count($_GET) > 0) {
+
+    if ($_GET['type'] == 7) {
+
+        $sql = "SELECT * FROM ttechnicien WHERE toujoursService = 1";
+
+        $result = mysqli_query($conn, $sql);
+        $output = '<th>Technicien</th>
+        <td>
+            <select class="form-control" id="ttechnicienFK_a" name="ttechnicienFK_a" value="" required>';
+
+        while ($row = mysqli_fetch_array($result)) {
+            $output .= '  
+                <option value=" ' . $row["ttechnicienPK"] . '">' . $row["prenomTechnicien"] . ' ' . $row["nomTechnicien"] . '</option>';
+        }
+        $output .= '</select></td></tr>';
+        echo $output;
+    }
+}
+
+// POST (SI UG)
+if (count($_POST) > 0) {
+
+    if ($_POST['type'] == 8) {
+
+        $tproduitsstockesFK = $_POST['tproduitsstockesFK'];
+        $quantiteEntree = $_POST['quantiteEntree'];
+        $tlieusortieFK = $_POST['tlieusortieFK'];
+        $ttechnicienFK = $_POST['ttechnicienFK'];
+
+
+        $result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` JOIN tcaracteristiquesproduits ON tproduitsstockes.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK WHERE `tproduitsstockesPK`='$tproduitsstockesFK'");
+
+        if ($row = mysqli_fetch_array($result)) {
+            $quantite = $row["quantite"]; // on récupère la quantité déjà présente en base de données
+        }
+
+        $sql = "INSERT INTO `tentrees`(`quantiteEntree`, `tlieusortieFK`, `ttechnicienFK`, `tproduitsstockeFK`) VALUES ('$quantiteEntree','$tlieusortieFK','$ttechnicienFK','$tproduitsstockesFK')";
+
+        if (mysqli_multi_query($conn, $sql)) {
+            if ($quantite == null) {
+                $sql = "UPDATE `tproduitsstockes` SET `quantite`=$quantiteEntree WHERE `tproduitsstockesPK`=$tproduitsstockesFK";
+            } else {
+                $sql = "UPDATE `tproduitsstockes` SET `quantite`=quantite+$quantiteEntree WHERE `tproduitsstockesPK`=$tproduitsstockesFK";
+            }
+            if (mysqli_multi_query($conn, $sql)) {
+                echo json_encode(array("statusCode" => 200));
+            } else {
+                echo mysqli_error($conn);
+            }
+        } else {
+            echo mysqli_error($conn);
+        }
+
+        mysqli_close($conn);
     }
 }
