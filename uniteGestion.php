@@ -1,7 +1,7 @@
 <?php
 // Initialiser la session
 session_start();
-require_once('php/connect.php');
+require_once('config/connect.php');
 // Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
 if (!isset($_SESSION["username"])) {
     header("Location: login.php");
@@ -57,7 +57,7 @@ if (!isset($_SESSION["username"])) {
                     nomUniteGestion: $("#nomUniteGestion").val(),
                 },
                 type: "post",
-                url: "php/saveUniteGestion.php",
+                url: "config/saveUniteGestion.php",
                 success: function(dataResult) {
                     try {
                         var dataResult = JSON.parse(dataResult);
@@ -99,7 +99,7 @@ if (!isset($_SESSION["username"])) {
                     nomUniteGestion: $("#nomUniteGestion_u").val(),
                 },
                 type: "post",
-                url: "php/saveUniteGestion.php",
+                url: "config/saveUniteGestion.php",
                 success: function(dataResult) {
                     try {
                         var dataResult = JSON.parse(dataResult);
@@ -132,7 +132,7 @@ if (!isset($_SESSION["username"])) {
 
         $(document).on("click", "#delete", function() {
             $.ajax({
-                url: "php/saveUniteGestion.php",
+                url: "config/saveUniteGestion.php",
                 type: "POST",
                 cache: false,
                 data: {
@@ -165,7 +165,7 @@ if (!isset($_SESSION["username"])) {
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
+                <a class="navbar-brand" href="index.php">Logiciel des stocks</a>
             </div>
             <!-- /.navbar-header -->
 
@@ -192,7 +192,7 @@ if (!isset($_SESSION["username"])) {
             <div class="collapse navbar-collapse navbar-ex1-collapse">
                 <ul class="nav navbar-nav side-nav">
                     <li>
-                        <a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+                        <a href="index.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
                                 <?php
                                 $result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
                                 $i = 0;

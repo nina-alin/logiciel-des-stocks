@@ -1,7 +1,7 @@
 <?php
 // Initialiser la session
 session_start();
-require_once('php/connect.php');
+require_once('config/connect.php');
 // Vérifiez si l'utilisateur est connecté, sinon redirigez-le vers la page de connexion
 if (!isset($_SESSION["username"])) {
 	header("Location: login.php");
@@ -51,7 +51,7 @@ if (!isset($_SESSION["username"])) {
 		function typeEntreeFunction() {
 			if (document.getElementById('typeEntree').value == 1) {
 				$.ajax({
-					url: "php/saveEntrees.php",
+					url: "config/saveEntrees.php",
 					method: "GET",
 					data: {
 						type: 5,
@@ -62,7 +62,7 @@ if (!isset($_SESSION["username"])) {
 				});
 			} else if (document.getElementById('typeEntree').value == 2) {
 				$.ajax({
-					url: "php/saveEntrees.php",
+					url: "config/saveEntrees.php",
 					method: "GET",
 					data: {
 						type: 6,
@@ -75,7 +75,7 @@ if (!isset($_SESSION["username"])) {
 			$("#trQuantite").html('<th>Quantité</th>' +
 				'<td><input type="number" class="form-control" id="quantiteEntree_a" name="quantiteEntree_a" min="1" required><b></b></td></tr>');
 			$.ajax({
-				url: "php/saveEntrees.php",
+				url: "config/saveEntrees.php",
 				method: "GET",
 				data: {
 					type: 7,
@@ -93,7 +93,7 @@ if (!isset($_SESSION["username"])) {
 			var nomFabricant = $(this).attr("data-fabricant");
 			document.getElementById("afficherViewNomStocks").innerHTML = "Caractéristiques de " + nomFabricant + " " + nomModele;
 			$.ajax({
-				url: "php/saveEntrees.php",
+				url: "config/saveEntrees.php",
 				method: "GET",
 				data: {
 					type: 4,
@@ -129,7 +129,7 @@ if (!isset($_SESSION["username"])) {
 						type: "1"
 					},
 					type: "post",
-					url: "php/saveEntrees.php",
+					url: "config/saveEntrees.php",
 					success: function(dataResult) {
 						console.log(dataResult);
 						try {
@@ -163,7 +163,7 @@ if (!isset($_SESSION["username"])) {
 						type: "8"
 					},
 					type: "post",
-					url: "php/saveEntrees.php",
+					url: "config/saveEntrees.php",
 					success: function(dataResult) {
 						console.log(dataResult);
 						try {
@@ -210,7 +210,7 @@ if (!isset($_SESSION["username"])) {
 					tproduitsstockesPK: $("#tproduitsstockesPK_u").val(),
 				},
 				type: "post",
-				url: "php/saveEntrees.php",
+				url: "config/saveEntrees.php",
 				success: function(dataResult) {
 					console.log(dataResult);
 					try {
@@ -255,7 +255,7 @@ if (!isset($_SESSION["username"])) {
 					type: "3"
 				},
 				type: "post",
-				url: "php/saveEntrees.php",
+				url: "config/saveEntrees.php",
 				success: function(dataResult) {
 					console.log(dataResult);
 					try {
@@ -295,7 +295,7 @@ if (!isset($_SESSION["username"])) {
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="dashboard.php">Logiciel des stocks</a>
+				<a class="navbar-brand" href="index.php">Logiciel des stocks</a>
 			</div>
 			<!-- /.navbar-header -->
 
@@ -322,7 +322,7 @@ if (!isset($_SESSION["username"])) {
 			<div class="collapse navbar-collapse navbar-ex1-collapse">
 				<ul class="nav navbar-nav side-nav">
 					<li>
-						<a href="dashboard.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
+						<a href="index.php"> Dashboard <span class="badge badge-danger" style="background-color:red;">
 								<?php
 								$result = mysqli_query($conn, "SELECT * FROM `tproduitsstockes` WHERE alerte=1 AND quantite<4");
 								$i = 0;

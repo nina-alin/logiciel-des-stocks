@@ -159,7 +159,7 @@ if (isset($_POST["ldapLogin"])) {
                 session_start();
                 $_SESSION['username'] = $ldapUser;
                 echo 'Vous êtes connecté !';
-                header("Location: dashboard.php");
+                header("Location: index.php");
             } else
                 $errorMessage = "Invalid credentials!";
         }
