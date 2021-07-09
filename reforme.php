@@ -353,7 +353,7 @@ if (!isset($_SESSION["username"])) {
                                     <td>
                                         <select class="form-control" id="ttechnicienFK_a" name="ttechnicienFK_a" value="" required>
                                             <?php
-                                            $result = mysqli_query($conn, "SELECT * FROM ttechnicien");
+                                            $result = mysqli_query($conn, "SELECT * FROM ttechnicien WHERE toujoursService=1");
                                             while ($row = mysqli_fetch_array($result)) {
                                             ?>
                                                 <option value="<?php echo $row["ttechnicienPK"]; ?>"><?php echo $row["prenomTechnicien"]; ?>&nbsp;<?php echo $row["nomTechnicien"]; ?></option>
@@ -422,7 +422,7 @@ if (!isset($_SESSION["username"])) {
                                     <td>
                                         <select class="form-control" id="ttechnicienFK_u" name="ttechnicienFK_u" value="" required>
                                             <?php
-                                            $result = mysqli_query($conn, "SELECT * FROM ttechnicien");
+                                            $result = mysqli_query($conn, "SELECT * FROM ttechnicien WHERE toujoursService=1");
                                             while ($row = mysqli_fetch_array($result)) {
                                             ?>
                                                 <option value="<?php echo $row["ttechnicienPK"]; ?>"><?php echo $row["prenomTechnicien"]; ?>&nbsp;<?php echo $row["nomTechnicien"]; ?></option>

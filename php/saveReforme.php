@@ -11,6 +11,11 @@ if (count($_POST) > 0) {
         $etatFonctionnement = $_POST['etatFonctionnement'];
         $ttechnicienFK = $_POST['ttechnicienFK'];
         $tcaracteristiquesproduitsFK = $_POST['tcaracteristiquesproduitsFK'];
+
+        // Encodage des guillemets / apostrophes
+        $numeroSerie = addslashes($numeroSerie);
+        $etatFonctionnement = addslashes($etatFonctionnement);
+
         $sql = "INSERT INTO `treforme`(`numeroSerie`, `etatFonctionnement`, `ttechnicienFK`, `tcaracteristiquesproduitsFK`) VALUES ('$numeroSerie','$etatFonctionnement','$ttechnicienFK','$tcaracteristiquesproduitsFK')";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(array("statusCode" => 200));
@@ -29,6 +34,11 @@ if (count($_POST) > 0) {
         $etatFonctionnement = $_POST['etatFonctionnement'];
         $ttechnicienFK = $_POST['ttechnicienFK'];
         $numeroSerie = $_POST['numeroSerie'];
+
+        // Encodage des guillemets / apostrophes
+        $numeroSerie = addslashes($numeroSerie);
+        $etatFonctionnement = addslashes($etatFonctionnement);
+
         $sql = "UPDATE `treforme` SET `numeroSerie`='$numeroSerie',`etatFonctionnement`='$etatFonctionnement',`ttechnicienFK`='$ttechnicienFK',`tcaracteristiquesproduitsFK`='$tcaracteristiquesproduitsFK' WHERE `treformePK`='$treformePK'";
         if (mysqli_query($conn, $sql)) {
             echo json_encode(array("statusCode" => 200));

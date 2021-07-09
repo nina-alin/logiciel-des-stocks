@@ -2,6 +2,12 @@
 
 include 'connect.php';
 
+require_once('class.email.php');
+
+$date = date('Y-m-d H:i:s', time());
+$date_mdp = date("Y-m-d 01:00:00", strtotime(date("Y-m-d", strtotime($date)) . " +1 day"));
+$mail = 'nina.alin@crous-lille.fr';
+
 // GET
 if (count($_GET) > 0) {
 
@@ -115,13 +121,18 @@ if (count($_POST) > 0) {
 
             if (mysqli_query($conn, $sql)) {
 
-                $sql = "SELECT quantite FROM `tproduitsstockes` WHERE `tproduitsstockesPK`='$tproduitsstockesPK';";
+                $sql = "SELECT * FROM `tproduitsstockes` JOIN tcaracteristiquesproduits ON tproduitsstockes.tcaracteristiquesproduitsFK = tcaracteristiquesproduits.tcaracteristiquesproduitsPK JOIN tfabricants ON tcaracteristiquesproduits.tfabricantsFK = tfabricants.tfabricantsPK WHERE `tproduitsstockesPK`='$tproduitsstockesPK';";
 
                 if (mysqli_query($conn, $sql)) {
 
-                    // on envoie un mail (pas encore fonctionnel) si la quantité stockée est trop basse
-                    if ($row["quantite"] < 4) {
-                    }
+                    // on envoie un mail si la quantité stockée est trop basse et si l'alerte est activée
+                    // pour l'instant ça marche po
+                    /*if ($row["quantite"] < 4 && $row["alerte"] = 1) {
+                        $sujet = '[logicieldesstocks.crous-lille.fr] : Alerte :  ' . $row["nomFabricant"] . ' ' . $row["nomModele"] . '';
+                        $msg = '<p>--Ceci est un message automatique--</p><p></p>';
+                        $msg .= '<p>Il ne reste plus que ' . $row["quantite"] . ' exemplaires de ' . $row["nomFabricant"] . ' ' . $row["nomModele"] . '<br>Merci de bien vouloir en recommander.</p>';
+                        $email = new email($sujet, $msg, "nina.alin@crous-lille.fr");
+                    }*/
                     echo json_encode(array("statusCode" => 200));
                 } else {
                     echo mysqli_error($conn);
